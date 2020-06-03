@@ -1,10 +1,12 @@
 import logging
 
-from flask import jsonify, make_response, request, abort
-from flask_restplus import Resource
+from flask import request, abort
+from flask_restplus import Resource, marshal
+
+from cllient import get_token
 from models.swagger_models import auth_request, auth_response, token, error
 
-from app import api, app
+from app import api
 from utils.HelperUtils import getClassName
 
 auth_name_space = api.namespace(name='Tokens', path="/", description='Manage Tokens')
@@ -23,16 +25,18 @@ class AuthResource(Resource):
 
     @api.doc(name="Auth Request", description='Authentication Request')
     @api.expect(requestModel, validate=True)
-    @api.marshal_with(responseModel, code=201, description='Created')
-    @api.marshal_with(errorModel, code=400, description='Bad Request')
-    @api.marshal_with(errorModel, code=401, description='Unauthorized')
-    @api.marshal_with(errorModel, code=500, description='Internal Server Error')
+    @auth_name_space.response(model=responseModel, code=201, description='Created', )
+    @auth_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @auth_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @auth_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self):
         try:
             print(request.json)
-
-            return {
-                "message": "New token created",
-            }
+            response = get_token(request.json["access_key"], request.json["secret_key"])
+            if response.status_code == 200:
+                return marshal(response.json(), responseModel), 201
+            else:
+                # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
+                raise abort(response.text.encode('utf8'))
         except KeyError as e:
-            auth_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+            auth_name_space.abort(500, e.__doc__, status=e, statusCode="500")

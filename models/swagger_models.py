@@ -18,10 +18,10 @@ def auth_request():
 def auth_response(tokenModel):
     return {
             'message': fields.String(required=True, description="Response message."),
-            'token': fields.Nested(tokenModel, required=True, description="Token."),
-            'account_id': fields.String(required=True, description="Account Id."),
-            'tenant_id': fields.String(required=True, description="Tenant Id."),
-            'tenants': fields.List(fields.String, required=True, description="Tenants List.")
+            'token': fields.Nested(tokenModel, required=True, description="Token.", attribute='data.token', skip_none=True),
+            'account_id': fields.String(required=True, description="Account Id.", attribute='data.user.project_master_id'),
+            'tenant_id': fields.String(required=True, description="Tenant Id.", attribute='data.projects.0.id'),
+            'tenants': fields.List(fields.Raw, required=True, description="Tenants List.", attribute='data.projects')
             }
 
 
@@ -29,7 +29,7 @@ def token():
     return {
             'issued_at': fields.String(required=True, description="Issued At Date."),
             'expires_at': fields.String(required=True, description="Expires At Date."),
-            'access_token': fields.String(required=True, description="Access Token."),
+            'access_token': fields.String(required=True, description="Access Token.", attribute='key'),
             'refresh_token': fields.String(required=True, description="Refresh Token.")
             }
 
@@ -81,4 +81,18 @@ def tenant_response(tenantDataModel):
 def tenant_delete_response():
     return {
             'message': fields.String(required=True, description="Response message.")
+            }
+
+
+def service_acc_data_model():
+    return {
+            'total_count': fields.Integer(required=True, description="Total Count.")
+            }
+
+
+def service_acc_response(serviceAccDataModel):
+    return {
+            'message': fields.String(required=True, description="Response message."),
+            # 'token': fields.Nested(tokenModel, required=True, description="Token."),
+            'data': fields.Nested(serviceAccDataModel, required=True, description="Metadata Info."),
             }
