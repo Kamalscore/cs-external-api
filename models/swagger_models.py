@@ -48,7 +48,7 @@ def auth_detailed_response(tokenModel, wildcardModel):
 
 
 def wild_card_model():
-    return {'*': fields.Wildcard(fields.String)}
+    return {'*': fields.Wildcard(fields.Raw)}
 
 
 def token():

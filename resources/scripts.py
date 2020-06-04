@@ -4,20 +4,21 @@
 __author__ = 'nagalakshmi'
 
 import logging
-
+import json
 from flask import request, abort
 from flask_restplus import Resource, marshal
 
 from app import api
 from definitions.script_definitions import ScriptURLDefinitions
 from models.script_models import script_request, script_response, script_metadata_model, \
-    script_data_model_list, script_delete_response
-from models.swagger_models import error
+    script_data_model_list, script_delete_response, script_data_model_view
+from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
 script_name_space = api.namespace(name='Scripts', path="/", description='Manage Scripts')
 scriptMetadataModel = api.model('ScriptMetadata', script_metadata_model())
 scriptDataModelList = api.model('ScriptData', script_data_model_list())
+scriptDataModelView = api.model('ScriptDataView', script_data_model_view(wild_card_model()))
 createScriptReqModel = api.model('CreateScriptRequest', script_request(scriptMetadataModel))
 updateScriptReqModel = api.model('UpdateScriptRequest', script_request(scriptMetadataModel))
 scriptRemovalResModel = api.model('ScriptRemovalResponse', script_delete_response())
@@ -71,7 +72,9 @@ class ScriptResource(Resource):
                 return marshal(response.json(), scriptResponseModelList, ordered=True), 200
             else:
                 # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
-                raise abort(response.text.encode('utf8'))
+                res_body = response.json()
+                script_name_space.abort(response.status_code, message=res_body.get("message"),
+                                        status=res_body.get("status"), statusCode=response.status_code)
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -116,7 +119,7 @@ class ScriptResource(Resource):
             format_params = {'tenant_id': tenant_id, 'script_id': script_id}
             response = invoke_api(script_api_definition, 'view', format_params, args=args, headers=headers)
             if response.status_code == 200:
-                return marshal(response.json(), scriptDataModelList, ordered=True), 200
+                return marshal(response.json(), scriptDataModelView, ordered=True, skip_none=True), 200
             else:
                 # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
                 raise abort(response.text.encode('utf8'))
