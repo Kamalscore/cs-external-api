@@ -3,7 +3,7 @@ import logging
 from flask import request, abort
 from flask_restplus import Resource, marshal, fields
 
-from cllient import get_token
+from client import get_token
 from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, auth_detailed_response, wild_card_model
 
 from app import api

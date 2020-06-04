@@ -4,7 +4,7 @@ from flask import request, abort
 from flask_restplus import Api, Resource, fields, marshal
 
 from app import api
-from cllient import get_projects
+from client import get_projects
 from utils.HelperUtils import getClassName
 from models.swagger_models import tenant_request, error, tenant_response, tenant_update_request, tenant_metadata_model, \
     tenant_data_model, tenant_delete_response, wild_card_model

@@ -1,8 +1,11 @@
+# This file is subject to the terms and conditions defined in the file
+# 'LICENSE.txt', which is part of this source code package.
+
 import requests
 
 
 def _url(path):
-    return "http://52.229.12.111:18080" + path
+    return "http://devserver.corestack.io:18080" + path
 
 
 def get_token(access_key=str, secret_key=str):

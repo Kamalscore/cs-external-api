@@ -1,6 +1,15 @@
-import inspect, base64
+# This file is subject to the terms and conditions defined in the file
+# 'LICENSE.txt', which is part of this source code package.
 
+import base64
+import inspect
+import json
 import time
+from urllib.parse import urlencode
+
+import requests
+
+from client import _url
 
 currentTimeInMillis = lambda: int(round(time.time() * 1000))
 
@@ -77,3 +86,17 @@ def strToList(strList, delimiter):
 
 def getDecodedValue(encryptedValue):
     return base64.standard_b64decode(encryptedValue)
+
+
+def invoke_api(definition, action, format_params=None, req_body=None, args=None, headers=None):
+    url = definition.get(action, {}).get('path', '').format(**format_params)
+    if not args:
+        args = {}
+    if definition.get(action, {}).get('query_params'):
+        args.update(definition.get(action, {}).get('query_params'))
+    url = _url(url)
+    if args:
+        url = url + '?' + urlencode(args)
+
+    return requests.request(definition.get(action, {}).get('method'), url, data=json.dumps(req_body),
+                            headers=headers)

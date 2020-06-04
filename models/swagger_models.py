@@ -1,11 +1,14 @@
+# This file is subject to the terms and conditions defined in the file
+# 'LICENSE.txt', which is part of this source code package.
+
 from flask_restplus import fields
 
 
 def auth_request():
     return {'access_key': fields.String(required=True,
-                                  description="API Access Key. This will be available in the ""My Profile""page. If "
-                                              "not, you can request your admin for one.",
-                                  help="API Access Key cannot be blank."),
+                                        description="API Access Key. This will be available in the ""My Profile""page. If "
+                                                    "not, you can request your admin for one.",
+                                        help="API Access Key cannot be blank."),
 
             'secret_key': fields.String(required=True,
                                         description="API Secret Key. This will be provided the first time when the "
@@ -50,42 +53,42 @@ def wild_card_model():
 
 def token():
     return {
-            'issued_at': fields.String(required=True, description="Issued At Date."),
-            'expires_at': fields.String(required=True, description="Expires At Date."),
-            'access_token': fields.String(required=True, description="Access Token.", attribute='key'),
-            'refresh_token': fields.String(required=True, description="Refresh Token.")
-            }
+        'issued_at': fields.String(required=True, description="Issued At Date."),
+        'expires_at': fields.String(required=True, description="Expires At Date."),
+        'access_token': fields.String(required=True, description="Access Token.", attribute='key'),
+        'refresh_token': fields.String(required=True, description="Refresh Token.")
+    }
 
 
 def error():
     return {
-            'message': fields.String(required=True, description="Error response message.")
-            }
+        'message': fields.String(required=True, description="Error response message.")
+    }
 
 
 def tenant_request(tenantMetadataModel):
     return {
-            'name': fields.String(required=True, description="Tenant Name."),
-            'description': fields.String(required=True, description="Tenant Description."),
-            'metadata': fields.Nested(tenantMetadataModel, required=True, description="Metadata Info."),
-            'account_id': fields.String(required=True, description="Account Id."),
-            'status': fields.Boolean(required=True, description="Tenant's status.."),
-            }
+        'name': fields.String(required=True, description="Tenant Name."),
+        'description': fields.String(required=True, description="Tenant Description."),
+        'metadata': fields.Nested(tenantMetadataModel, required=True, description="Metadata Info."),
+        'account_id': fields.String(required=True, description="Account Id."),
+        'status': fields.Boolean(required=True, description="Tenant's status.."),
+    }
 
 
 def tenant_update_request(tenantMetadataModel):
     return {
-            'description': fields.String(required=False, description="Tenant Description."),
-            'metadata': fields.Nested(tenantMetadataModel, required=False, description="Metadata Info."),
-            'account_id': fields.String(required=True, description="Account Id."),
-            'status': fields.Boolean(required=False, description="Tenant's status.."),
-            }
+        'description': fields.String(required=False, description="Tenant Description."),
+        'metadata': fields.Nested(tenantMetadataModel, required=False, description="Metadata Info."),
+        'account_id': fields.String(required=True, description="Account Id."),
+        'status': fields.Boolean(required=False, description="Tenant's status.."),
+    }
 
 
 def tenant_metadata_model():
     return {
-            'message': fields.String(required=True, description="Error response message.")
-            }
+        'message': fields.String(required=True, description="Error response message.")
+    }
 
 
 def auth_tenant_model():
@@ -97,8 +100,8 @@ def auth_tenant_model():
 
 def tenant_data_model():
     return {
-            'tenant_id': fields.String(required=True, description="Tenant Id.")
-            }
+        'tenant_id': fields.String(required=True, description="Tenant Id.")
+    }
 
 
 def tenant_response(tenantDataModel):
@@ -110,19 +113,19 @@ def tenant_response(tenantDataModel):
 
 def tenant_delete_response():
     return {
-            'message': fields.String(required=True, description="Response message.")
-            }
+        'message': fields.String(required=True, description="Response message.")
+    }
 
 
 def service_acc_data_model():
     return {
-            'total_count': fields.Integer(required=True, description="Total Count.")
-            }
+        'total_count': fields.Integer(required=True, description="Total Count.")
+    }
 
 
 def service_acc_response(serviceAccDataModel):
     return {
-            'message': fields.String(required=True, description="Response message."),
-            # 'token': fields.Nested(tokenModel, required=True, description="Token."),
-            'data': fields.Nested(serviceAccDataModel, required=True, description="Metadata Info."),
-            }
+        'message': fields.String(required=True, description="Response message."),
+        # 'token': fields.Nested(tokenModel, required=True, description="Token."),
+        'data': fields.Nested(serviceAccDataModel, required=True, description="Metadata Info."),
+    }

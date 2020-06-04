@@ -1,7 +1,10 @@
-from flask import Flask, jsonify, make_response
+# This file is subject to the terms and conditions defined in the file
+# 'LICENSE.txt', which is part of this source code package.
+
+from flask import Flask
+from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restplus import Api
-from flask_cors import CORS
 
 app = Flask(__name__)
 api = Api(app=app, version="1.0.0", title="API Wrapper", description="A Service API Wrapper!",
