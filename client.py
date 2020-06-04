@@ -5,7 +5,7 @@ import requests
 
 
 def _url(path):
-    return "http://devserver.corestack.io:18080" + path
+    return "http://localhost:18080" + path
 
 
 def get_token(access_key=str, secret_key=str):

@@ -16,4 +16,4 @@ api.add_namespace(policy_name_space)
 
 if __name__ == '__main__':
     # Enable or disable the mask field, by default X-Fields
-    app.run(debug=True)
+    app.run(debug=True, port=4000)
