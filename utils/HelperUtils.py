@@ -55,7 +55,9 @@ def importClass(fullyQualifiedClassName):
 
 
 def listMethods(fullyQualifiedClassName):
-    return inspect.getmembers(importClass(fullyQualifiedClassName) if type(fullyQualifiedClassName) is str else fullyQualifiedClassName, predicate=inspect.ismethod)
+    return inspect.getmembers(
+        importClass(fullyQualifiedClassName) if type(fullyQualifiedClassName) is str else fullyQualifiedClassName,
+        predicate=inspect.ismethod)
 
 
 def hasMethod(fullyQualifiedClassName, methodName):
