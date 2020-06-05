@@ -1,7 +1,7 @@
 import logging
 
-from flask import request, abort
-from flask_restplus import Resource, marshal, fields
+from flask import request
+from flask_restplus import Resource, marshal
 
 from client import get_token
 from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, wild_card_model, \
