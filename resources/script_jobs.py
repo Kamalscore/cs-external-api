@@ -9,7 +9,7 @@ from flask import request
 from flask_restplus import Resource, marshal
 
 from app import api
-from definitions.script_definitions import ScripJobtURLDefinitions
+from definitions.script_job_definitions import ScripJobURLDefinitions
 from models.script_job_models import script_job_job_info_model, script_job_script_info_data_model, script_job_view_model
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
@@ -20,7 +20,7 @@ scriptJobScriptInfoDataModel = api.model('ScriptJobScriptInfo', script_job_scrip
 scriptJobInfoDataModel = api.model('ScriptJobInfo', script_job_job_info_model(scriptJobScriptInfoDataModel))
 scriptJobDataModelView = api.model('ScriptJobDataView', script_job_view_model(scriptJobInfoDataModel))
 errorModel = api.model('Error', error())
-script_job_api_definition = ScripJobtURLDefinitions.URLInfo
+script_job_api_definition = ScripJobURLDefinitions.URLInfo
 
 
 @script_job_name_space.route("/v1/<string:tenant_id>/scriptjobs/<script_job_id>")

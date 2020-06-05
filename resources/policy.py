@@ -8,7 +8,7 @@ from flask import request
 from flask_restplus import Resource, marshal
 
 from app import api
-from definitions.policy_definations import PolicyURLDefinitions
+from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response,policy_update_model
 from models.swagger_models import error

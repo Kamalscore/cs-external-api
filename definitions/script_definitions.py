@@ -28,16 +28,3 @@ class ScriptURLDefinitions(object):
             query_params=dict(action='execute')
         )
     )
-
-class ScripJobtURLDefinitions(object):
-    URLInfo = dict(
-        list=dict(
-            path='/v1/{tenant_id}/scriptjobs',
-            method='get'
-        ),
-        view=dict(
-            path='/v1/{tenant_id}/scriptjobs/{script_job_id}',
-            method='get',
-            query_params=dict(version='v1')
-        )
-    )
