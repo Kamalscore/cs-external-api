@@ -30,7 +30,7 @@ updateScriptReqModel = api.model('UpdateScriptRequest', script_data_model_create
                                                                                  minimumReqDataModel))
 createUpdateResponseModel = api.model('CreateScriptResponse', script_create_update_response_model())
 executeScriptJobReqModel = api.model('ExecuteScriptJobData', script_execute_job_input_model(wildcardModel))
-executeScriptReqModel = api.model('ExecuteScriptRequest', script_execute_request(script_execute_request))
+executeScriptReqModel = api.model('ExecuteScriptRequest', script_execute_request(executeScriptJobReqModel))
 executeResponseModel = api.model('ExecuteResponse', script_execute_response_model())
 scriptRemovalResModel = api.model('ScriptDeleteResponse', script_delete_response())
 scriptResponseModelList = api.model('ScriptListResponse', script_response_list(scriptDataModelList))
