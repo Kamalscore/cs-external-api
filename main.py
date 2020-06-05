@@ -3,11 +3,11 @@
 
 from app import api, app
 from resources.auth import auth_name_space
+from resources.policy import policy_name_space
+from resources.scripts import script_name_space
 from resources.tenant_id_ns import tenant_id_name_space
 from resources.tenants import tenant_name_space
 from resources.favicon import Fav16, Fav32
-from resources.policy import policy_name_space
-from resources.scripts import script_name_space
 
 api.add_namespace(auth_name_space)
 api.add_namespace(tenant_name_space)

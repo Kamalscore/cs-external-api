@@ -28,10 +28,7 @@ class TenantResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(TenantResource))
 
-    @api.doc(name="CreateTenant Request", description='Creates a new tenant.', params={'X-Auth-User': {
-                                                                                    'description': 'Access Token.',
-                                                                                    'in': 'header', 'type': 'str',
-                                                                                    'default': ''}})
+    @api.doc(name="CreateTenant Request", description='Creates a new tenant.', security='apiKey')
     @api.expect(createTenantReqModel, validate=True)
     @tenant_name_space.response(model=createResponseModel, code=201, description='Created')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -51,10 +48,7 @@ class TenantResource(Resource):
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="ListTenants Request", description='List all the tenants.', params={'X-Auth-User': {
-                                                                                    'description': 'Access Token.',
-                                                                                    'in': 'header', 'type': 'str',
-                                                                                    'default': ''}})
+    @api.doc(name="ListTenants Request", description='List all the tenants.', security='apiKey')
     @tenant_name_space.response(model=responseModel, code=200, description='Success', as_list=True)
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -83,10 +77,7 @@ class TenantResourceById(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(TenantResourceById))
 
-    @api.doc(name="GetTenant Request", description='Gets the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant', 'X-Auth-User': {
-                                                                                    'description': 'Access Token.',
-                                                                                    'in': 'header', 'type': 'str',
-                                                                                    'default': ''}})
+    @api.doc(name="GetTenant Request", description='Gets the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
     @tenant_name_space.response(model=responseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -109,10 +100,7 @@ class TenantResourceById(Resource):
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="PutTenant Request", description='Updates the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant', 'X-Auth-User': {
-                                                                                    'description': 'Access Token.',
-                                                                                    'in': 'header', 'type': 'str',
-                                                                                    'default': ''}})
+    @api.doc(name="PutTenant Request", description='Updates the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
     @api.expect(updateTenantReqModel, validate=True)
     @tenant_name_space.response(model=updateResponseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -134,10 +122,7 @@ class TenantResourceById(Resource):
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="DeleteTenant Request", description='Deletes the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant', 'X-Auth-User': {
-                                                                                    'description': 'Access Token.',
-                                                                                    'in': 'header', 'type': 'str',
-                                                                                    'default': ''}})
+    @api.doc(name="DeleteTenant Request", description='Deletes the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
     @tenant_name_space.response(model=tenantRemovalResModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
