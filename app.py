@@ -7,7 +7,7 @@ from flask_marshmallow import Marshmallow
 from flask_restplus import Api
 
 app = Flask(__name__)
-api = Api(app=app, version="1.0.0", title="API Wrapper", description="A Service API Wrapper!",
+api = Api(app=app, version="1.0.0", title="Corestack External API", description="A Service API Wrapper!",
           terms_url="http://corestack.io/",
           contact="Contact CloudEnablers", contact_email="dev@cloudenablers.com",
           license="CloudEnablers Inc License", license_url="http://corestack.io/licenses/LICENSE-2.0.html")

@@ -48,7 +48,7 @@ class PolicyResource(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id}
-            response = invoke_api(script_api_definition, 'creat', format_params, args=args, headers=headers,
+            response = invoke_api(script_api_definition, 'create', format_params, args=args, headers=headers,
                                   req_body=request.json)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:

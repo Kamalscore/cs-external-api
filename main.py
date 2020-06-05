@@ -12,9 +12,9 @@ from resources.favicon import Fav16, Fav32
 api.add_namespace(auth_name_space)
 api.add_namespace(tenant_name_space)
 api.add_namespace(tenant_id_name_space)
-api.add_namespace(script_name_space)
 api.add_namespace(policy_name_space)
+api.add_namespace(script_name_space)
 
 if __name__ == '__main__':
     # Enable or disable the mask field, by default X-Fields
-    app.run(debug=True, port=4000)
+    app.run(debug=True)

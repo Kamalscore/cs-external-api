@@ -3,7 +3,7 @@ import logging
 from flask import request, abort
 from flask_restplus import Resource, marshal, fields
 
-from cllient import get_token
+from client import get_token
 from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, wild_card_model, \
     auth_user_model, auth_detailed_response
 
@@ -17,8 +17,9 @@ requestModel = api.model('AuthRequest', auth_request())
 wildcardModel = api.model('Dict', wild_card_model())
 userModel = api.model('User', auth_user_model(wildcardModel))
 responseModel = api.model('AuthResponse', auth_response(tokenModel, authTenantModel, userModel))
-#responseDetailedModel = api.model('AuthDetailedResponse', auth_detailed_response(tokenModel, userModel, wildcardModel))
-responseDetailedModel = api.inherit('AuthDetailedResponse', responseModel, auth_detailed_response(tokenModel, userModel, wildcardModel))
+# responseDetailedModel = api.model('AuthDetailedResponse', auth_detailed_response(tokenModel, userModel, wildcardModel))
+responseDetailedModel = api.inherit('AuthDetailedResponse', responseModel,
+                                    auth_detailed_response(tokenModel, userModel, wildcardModel))
 errorModel = api.model('Error', error())
 
 
@@ -35,7 +36,7 @@ class AuthResource(Resource):
                                               "is <i>true</i>. Please find the model: <b>AuthResponse</b>, when the "
                                               "flag is <i>false</i>.",
              params={'is_detail_required': {'description': 'Whether detailed response required or not.',
-                                            'in': 'query', 'type': 'bool', 'default':False}})
+                                            'in': 'query', 'type': 'bool', 'default': False}})
     @api.expect(requestModel, validate=True)
     @auth_name_space.response(model=responseDetailedModel, code=201, description='Created')
     @auth_name_space.response(model=responseModel, code=201, description='Created')
