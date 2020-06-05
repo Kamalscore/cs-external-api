@@ -51,7 +51,7 @@ def script_data_model_view(wild_card_model):
         'playbook_name': fields.String(required=True, description="Playbook name - available for ansible alone",
                                        attribute='data.playbook_name'),
         'cookbook_path': fields.String(required=True, description="Cookbook path - available for chef alone.",
-                                       attribute='data.playbook_path'),
+                                       attribute='data.cookbook_path'),
         'cookbook_name': fields.String(required=True, description="Cookbook path - available for chef alone",
                                        attribute='data.cookbook_name'),
         'shell_script_path': fields.String(required=True, description="Shell script path - available for shell alone",
@@ -67,7 +67,8 @@ def script_data_model_view(wild_card_model):
         'created_by': fields.String(required=True, description="Name of the user who created the script.",
                                     attribute='data.created_by'),
         'created_at': fields.String(required=True, description="Script creation time", attribute='data.created_at'),
-        'updated_by': fields.String(required=True, description="Name of the user who updated the script. ", attribute='data.updated_by'),
+        'updated_by': fields.String(required=True, description="Name of the user who updated the script. ",
+                                    attribute='data.updated_by'),
         'updated_at': fields.String(required=True, description="Script updation time", attribute='data.updated_at'),
     }
 
@@ -82,14 +83,74 @@ def script_request(script_metadata_model):
     }
 
 
-def script_response(script_data_model):
+def script_response_list(script_data_model):
     return {
-        'message': fields.String(required=True, description="Response message."),
-        'data': fields.Nested(script_data_model, required=True, description="Metadata Info.",
-                              attribute='data.scripts',
-                              skip_none=True),
+        'scripts': fields.Nested(script_data_model,
+                                 required=True, description="Metadata Info.",
+                                 attribute='data.scripts',
+                                 skip_none=True),
     }
 
+
+def script_info_model():
+    return {
+        'path_type': fields.String(required=True, description="path_type"),
+        'name': fields.String(required=True, description="Script Name"),
+        'path': fields.String(required=True, description="Path of the script")
+    }
+
+
+def script_data_model_create(script_info_model, wild_card_model, minimum_requirements_model):
+    return {
+        'name': fields.String(required=True, description="Script Name"),
+        'uri': fields.String(description="Unique URI for script"),
+        'description': fields.String(description="Description about script"),
+        'category': fields.List(fields.String, required=True, description="Script Category",
+                                enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
+                                      "Others"]),
+        'platform': fields.List(fields.String, required=True, description="Platforms supported by script.",
+                                enum=["linux", "windows"]),
+        'operating_system': fields.List(fields.String, required=True, description="OS supported by script",
+                                        enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
+        'config_type': fields.String(required=True, description="Config type of the script"),
+        'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
+
+        'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
+        'dependencies': fields.List(
+            fields.Nested(script_info_model, description='Details of the dependent scripts if any')),
+        'input_source': fields.String(description="Input source of the script during execution (Script/Resource)",
+                                      default='Script'),
+        'is_scanned': fields.String(description="Whether the script needs to be scanned or not", default=True),
+        'scanned_parameters': fields.Nested(wild_card_model, description="Parameter object scanned by corestack"),
+        'minimum_requirement': fields.Nested(minimum_requirements_model,
+                                             description="Minimum requirements to install the script"),
+        'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts"),
+        #                                attribute='data.playbook_path'),
+        # 'cookbook_name': fields.String(required=True, description="Cookbook path - available for chef alone",
+        #                                attribute='data.cookbook_name'),
+        # 'shell_script_path': fields.String(required=True, description="Shell script path - available for shell alone",
+        #                                    attribute='data.shell_script_path'),
+        # 'shell_script_name': fields.String(required=True, description="Shell script path - available for shell alone",
+        #                                    attribute='data.shell_script_name'),
+        # 'module_path': fields.String(required=True, description="Module path - available for puppet alone",
+        #                              attribute='data.module_path'),
+        # 'module_name': fields.String(required=True, description="Module path - available for puppet alone.",
+        #                              attribute='data.module_name'),
+        'parameters': fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
+    }
+
+
+def script_minimum_requirements_model():
+    return {
+        "ram(MB)": fields.Float(description="Minimum RAM required(in MB) to install the script.", default=0.0),
+        "cpu": fields.Integer(description="Minimum CPU core required(in MB) to install the script.", default=0),
+        "disk(MB)": fields.Float(description="Minimum disk space required(in MB) to install the script.", default=0.0),
+    }
+
+def script_create_update_response_model():
+    return {
+        'script_id' : fields.String(description="Unique ID of the script", attribute='data.id')
+    }
 
 def script_delete_response():
     return {
