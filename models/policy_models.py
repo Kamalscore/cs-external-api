@@ -88,7 +88,7 @@ def policy_delete_response():
 
 def policy_metadata_model():
     return {
-        'file': fields.String(required=True, description="Metadata about policy")
+        'file': fields.String(required=False, description="Metadata about policy")
     }
 
 
