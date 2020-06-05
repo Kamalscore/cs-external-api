@@ -23,8 +23,21 @@ class ScriptURLDefinitions(object):
             method='put'
         ),
         execute=dict(
-            path='v1/{tenant_id}/scripts',
+            path='/v1/{tenant_id}/scripts',
             method='post',
             query_params=dict(action='execute')
+        )
+    )
+
+class ScripJobtURLDefinitions(object):
+    URLInfo = dict(
+        list=dict(
+            path='/v1/{tenant_id}/scriptjobs',
+            method='get'
+        ),
+        view=dict(
+            path='/v1/{tenant_id}/scriptjobs/{script_job_id}',
+            method='get',
+            query_params=dict(version='v1')
         )
     )
