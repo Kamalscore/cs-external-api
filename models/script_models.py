@@ -147,10 +147,44 @@ def script_minimum_requirements_model():
         "disk(MB)": fields.Float(description="Minimum disk space required(in MB) to install the script.", default=0.0),
     }
 
+
 def script_create_update_response_model():
     return {
-        'script_id' : fields.String(description="Unique ID of the script", attribute='data.id')
+        'script_id': fields.String(description="Unique ID of the script", attribute='data.id')
     }
+
+
+def script_execute_request(job_input_data_model):
+    return {
+        'job_name': fields.String(required=True, description="Name of the script job"),
+        'job_details': fields.Nested(job_input_data_model,
+                                     required=True, description="Execution input such as script/host details",
+                                     skip_none=True),
+    }
+
+
+def script_execute_job_input_model(wild_card_model):
+    return {
+        "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
+                                                      "or custom json", default="script", enum=["script", "json"]),
+        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
+        "script_name": fields.List(fields.String, required=True, description='script info'),
+        "username": fields.String(required=True, description="Username of the target machine"),
+        "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)"),
+        "host": fields.String(required=True, description="Target machine's IP/DNS"),
+        "password": fields.String(description="Password of the target machine's IP/DNS"),
+        "keypair_flag": fields.String(required=True,
+                                      description="Flag to indicate whether to connect using keypair or not"),
+        "key_file": fields.String(required=True, description="Private key content if keypair_flag is true"),
+        "port": fields.String(required=True, description="SSH/WinRM port")
+    }
+
+
+def script_execute_response_model():
+    return {
+        'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.id')
+    }
+
 
 def script_delete_response():
     return {

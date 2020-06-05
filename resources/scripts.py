@@ -4,15 +4,16 @@
 __author__ = 'nagalakshmi'
 
 import logging
-import json
-from flask import request, abort
+
+from flask import request
 from flask_restplus import Resource, marshal
 
 from app import api
 from definitions.script_definitions import ScriptURLDefinitions
 from models.script_models import script_request, script_response_list, script_metadata_model, \
-    script_data_model_list, script_delete_response, script_data_model_view, script_data_model_create, script_info_model, \
-    script_minimum_requirements_model, script_create_update_response_model
+    script_data_model_list, script_delete_response, script_data_model_view, script_data_model_create, \
+    script_info_model, script_minimum_requirements_model, script_create_update_response_model, \
+    script_execute_response_model, script_execute_request, script_execute_job_input_model
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -27,6 +28,9 @@ createScriptReqModel = api.model('CreateScriptRequest',
                                  script_data_model_create(scriptInfoDataModel, wildcardModel, minimumReqDataModel))
 updateScriptReqModel = api.model('UpdateScriptRequest', script_request(scriptMetadataModel))
 createUpdateResponseModel = api.model('createUpdateResponse', script_create_update_response_model())
+executeScriptJobReqModel = api.model('executeJobData', script_execute_job_input_model(wildcardModel))
+executeScriptReqModel = api.model('executeScriptRequest', script_execute_request(script_execute_request))
+executeResponseModel = api.model('executeResponse', script_execute_response_model())
 scriptRemovalResModel = api.model('ScriptRemovalResponse', script_delete_response())
 scriptResponseModelList = api.model('ScriptResponse', script_response_list(scriptDataModelList))
 errorModel = api.model('Error', error())
@@ -89,6 +93,39 @@ class ScriptResource(Resource):
                 # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
                 return marshal(response.json(), errorModel), response.status_code
 
+        except Exception as e:
+            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+
+@script_name_space.route("/v1/<string:tenant_id>/scripts/execute")
+class ScriptResource(Resource):
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(ScriptResource))
+
+    @api.doc(name="Execute Script Request", description='Execute a script.',
+             params={
+                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
+                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
+    @api.expect(executeScriptReqModel, validate=True)
+    @script_name_space.response(model=scriptResponseModelList, code=201, description='Created')
+    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def post(self, tenant_id):
+        try:
+            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            format_params = {
+                'tenant_id': tenant_id
+            }
+            args = request.args
+            headers = request.headers
+            response = invoke_api(script_api_definition, 'execute', format_params, req_body, args=args, headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), executeResponseModel, ordered=True), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
