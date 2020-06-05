@@ -73,16 +73,6 @@ def script_data_model_view(wild_card_model):
     }
 
 
-def script_request(script_metadata_model):
-    return {
-        'name': fields.String(required=True, description="Script Name."),
-        'description': fields.String(required=True, description="Tenant Description."),
-        'metadata': fields.Nested(script_metadata_model, required=True, description="Metadata Info."),
-        'config_type': fields.String(required=True, description="Config Type (chef/ansible/puppet/shell)"),
-        'status': fields.Boolean(required=True, description="Script's status.."),
-    }
-
-
 def script_response_list(script_data_model):
     return {
         'scripts': fields.Nested(script_data_model,
@@ -112,7 +102,7 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
                                 enum=["linux", "windows"]),
         'operating_system': fields.List(fields.String, required=True, description="OS supported by script",
                                         enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
-        'config_type': fields.String(required=True, description="Config type of the script"),
+        'config_type': fields.String(required=True, description="Config type of the script", enum=['chef', 'ansible', 'puppet', 'shell']),
         'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),

@@ -10,7 +10,7 @@ from flask_restplus import Resource, marshal
 
 from app import api
 from definitions.script_definitions import ScriptURLDefinitions
-from models.script_models import script_request, script_response_list, script_metadata_model, \
+from models.script_models import script_response_list, script_metadata_model, \
     script_data_model_list, script_delete_response, script_data_model_view, script_data_model_create, \
     script_info_model, script_minimum_requirements_model, script_create_update_response_model, \
     script_execute_response_model, script_execute_request, script_execute_job_input_model
@@ -20,19 +20,20 @@ from utils.HelperUtils import getClassName, invoke_api
 wildcardModel = api.model('Dict', wild_card_model())
 script_name_space = api.namespace(name='Scripts', path="/", description='Manage Scripts')
 scriptMetadataModel = api.model('ScriptMetadata', script_metadata_model())
-scriptDataModelList = api.model('ScriptData', script_data_model_list())
+scriptDataModelList = api.model('ScriptDataList', script_data_model_list())
 scriptDataModelView = api.model('ScriptDataView', script_data_model_view(wildcardModel))
 scriptInfoDataModel = api.model('ScriptInfo', script_info_model())
 minimumReqDataModel = api.model('ScriptMinimumRequirements', script_minimum_requirements_model())
 createScriptReqModel = api.model('CreateScriptRequest',
                                  script_data_model_create(scriptInfoDataModel, wildcardModel, minimumReqDataModel))
-updateScriptReqModel = api.model('UpdateScriptRequest', script_request(scriptMetadataModel))
-createUpdateResponseModel = api.model('createUpdateResponse', script_create_update_response_model())
-executeScriptJobReqModel = api.model('executeJobData', script_execute_job_input_model(wildcardModel))
-executeScriptReqModel = api.model('executeScriptRequest', script_execute_request(script_execute_request))
-executeResponseModel = api.model('executeResponse', script_execute_response_model())
-scriptRemovalResModel = api.model('ScriptRemovalResponse', script_delete_response())
-scriptResponseModelList = api.model('ScriptResponse', script_response_list(scriptDataModelList))
+updateScriptReqModel = api.model('UpdateScriptRequest', script_data_model_create(scriptInfoDataModel, wildcardModel,
+                                                                                 minimumReqDataModel))
+createUpdateResponseModel = api.model('CreateScriptResponse', script_create_update_response_model())
+executeScriptJobReqModel = api.model('ExecuteScriptJobData', script_execute_job_input_model(wildcardModel))
+executeScriptReqModel = api.model('ExecuteScriptRequest', script_execute_request(script_execute_request))
+executeResponseModel = api.model('ExecuteResponse', script_execute_response_model())
+scriptRemovalResModel = api.model('ScriptDeleteResponse', script_delete_response())
+scriptResponseModelList = api.model('ScriptListResponse', script_response_list(scriptDataModelList))
 errorModel = api.model('Error', error())
 script_api_definition = ScriptURLDefinitions.URLInfo
 
@@ -170,9 +171,7 @@ class ScriptResource(Resource):
              description='Update a script.',
              params={
                  'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'},
-                 'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
-                           'enum': ['chef', 'ansible', 'puppet', 'shell']}
+                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
              })
     @script_name_space.response(model=createUpdateResponseModel, code=200, description='Success')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
