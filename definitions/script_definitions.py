@@ -23,7 +23,7 @@ class ScriptURLDefinitions(object):
             method='put'
         ),
         execute=dict(
-            path='v1/{tenant_id}/scripts',
+            path='/v1/{tenant_id}/scripts',
             method='post',
             query_params=dict(action='execute')
         )

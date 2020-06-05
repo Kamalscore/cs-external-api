@@ -22,7 +22,7 @@ def script_data_model_list():
         'status': fields.String(required=True, description="Status of the script"),
         'category': fields.List(fields.Raw, required=True, description="Script Category"),
         'platform': fields.List(fields.Raw, required=True, description="Platforms supported by script."),
-        'operating_systems': fields.List(fields.Raw, required=True, description="OS supported by script"),
+        'operating_system': fields.List(fields.Raw(), required=True, description="OS supported by script"),
         'type': fields.String(required=True, description="Config type of the script", attribute='config_type'),
         'scope': fields.String(required=True, description="Scope of the script.")
     }
@@ -36,11 +36,13 @@ def script_data_model_view(wild_card_model):
         'description': fields.String(required=True, description="Description about script",
                                      attribute='data.description'),
         'status': fields.String(required=True, description="Status of the script", attribute='data.status'),
-        'category': fields.List(fields.Raw, required=True, description="Script Category", attribute='data.category'),
+        'category': fields.List(
+            fields.Raw(enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
+                             "Others"]), required=True, description="Script Category", attribute='data.category'),
         'platform': fields.List(fields.Raw, required=True, description="Platforms supported by script.",
                                 attribute='data.platform'),
-        'operating_systems': fields.List(fields.Raw, required=True, description="OS supported by script",
-                                         attribute='data.operating_systems'),
+        'operating_system': fields.List(fields.Raw, required=True, description="OS supported by script",
+                                        attribute='data.operating_systems'),
         'type': fields.String(required=True, description="Config type of the script", attribute='data.config_type'),
         'scope': fields.String(required=True, description="Scope of the script", attribute='data.scope'),
         'path_type': fields.String(required=True, description="Script path type such as"
@@ -95,14 +97,15 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
         'name': fields.String(required=True, description="Script Name"),
         'uri': fields.String(description="Unique URI for script"),
         'description': fields.String(description="Description about script"),
-        'category': fields.List(fields.String, required=True, description="Script Category",
-                                enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
-                                      "Others"]),
-        'platform': fields.List(fields.String, required=True, description="Platforms supported by script.",
-                                enum=["linux", "windows"]),
-        'operating_system': fields.List(fields.String, required=True, description="OS supported by script",
-                                        enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
-        'config_type': fields.String(required=True, description="Config type of the script", enum=['chef', 'ansible', 'puppet', 'shell']),
+        'category': fields.List(
+            fields.String(enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
+                                "Others"]), required=True, description="Script Category"),
+        'platform': fields.List(fields.String(enum=["linux", "windows"]), required=True,
+                                description="Platforms supported by script."),
+        'operating_system': fields.List(fields.String(enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
+                                        required=True, description="OS supported by script"),
+        'config_type': fields.String(required=True, description="Config type of the script",
+                                     enum=['chef', 'ansible', 'puppet', 'shell']),
         'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
@@ -147,9 +150,11 @@ def script_create_update_response_model():
 def script_execute_request(job_input_data_model):
     return {
         'job_name': fields.String(required=True, description="Name of the script job"),
-        'job_details': fields.Nested(job_input_data_model,
-                                     required=True, description="Execution input such as script/host details",
-                                     skip_none=True),
+        'job_details': fields.List(fields.Nested(job_input_data_model,
+                                                 required=True,
+                                                 description="Execution input such as script/host details",
+                                                 skip_none=True)),
+        "config_type": fields.String(description='Config type of the script(s)')
     }
 
 
@@ -160,7 +165,8 @@ def script_execute_job_input_model(wild_card_model):
         "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
         "script_name": fields.List(fields.String, required=True, description='script info'),
         "username": fields.String(required=True, description="Username of the target machine"),
-        "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)"),
+        "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)",
+                                  enum=["linux", "windows"]),
         "host": fields.String(required=True, description="Target machine's IP/DNS"),
         "password": fields.String(description="Password of the target machine's IP/DNS"),
         "keypair_flag": fields.String(required=True,
@@ -172,7 +178,7 @@ def script_execute_job_input_model(wild_card_model):
 
 def script_execute_response_model():
     return {
-        'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.id')
+        'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.job_id')
     }
 
 

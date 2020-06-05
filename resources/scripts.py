@@ -50,7 +50,7 @@ class ScriptResource(Resource):
                  'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
                  'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
     @api.expect(createScriptReqModel, validate=True)
-    @script_name_space.response(model=scriptResponseModelList, code=201, description='Created')
+    @script_name_space.response(model=createUpdateResponseModel, code=201, description='Created')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -91,7 +91,6 @@ class ScriptResource(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), scriptResponseModelList, ordered=True), 200
             else:
-                # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
                 return marshal(response.json(), errorModel), response.status_code
 
         except Exception as e:
@@ -110,13 +109,13 @@ class ScriptResource(Resource):
                  'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
                  'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
     @api.expect(executeScriptReqModel, validate=True)
-    @script_name_space.response(model=scriptResponseModelList, code=201, description='Created')
+    @script_name_space.response(model=executeResponseModel, code=201, description='Created')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self, tenant_id):
         try:
-            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            req_body = marshal(request.json, executeScriptReqModel, ordered=True, skip_none=True)
             format_params = {
                 'tenant_id': tenant_id
             }
@@ -146,7 +145,7 @@ class ScriptResource(Resource):
                            'enum': ['chef', 'ansible', 'puppet', 'shell']}
              })
     @api.expect(createScriptReqModel, validate=True)
-    @script_name_space.response(model=createUpdateResponseModel, code=201, description='Updated')
+    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Updated')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -167,13 +166,13 @@ class ScriptResource(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="UpdateScript Request",
-             description='Update a script.',
+    @api.doc(name="ViewScript Request",
+             description='View script details.',
              params={
                  'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
                  'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
              })
-    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Success')
+    @script_name_space.response(model=scriptDataModelView, code=200, description='Success')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -197,7 +196,6 @@ class ScriptResource(Resource):
                 marshalled_resp.pop('path_type', None)
                 return marshalled_resp, 200
             else:
-                # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
