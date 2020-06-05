@@ -3,8 +3,9 @@ import logging
 from flask import request, abort
 from flask_restplus import Resource, marshal, fields
 
-from client import get_token
-from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, auth_detailed_response, wild_card_model
+from cllient import get_token
+from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, wild_card_model, \
+    auth_user_model, auth_detailed_response
 
 from app import api
 from utils.HelperUtils import getClassName
@@ -14,9 +15,10 @@ tokenModel = api.model('Token', token())
 authTenantModel = api.model('TokenTenantModel', auth_tenant_model())
 requestModel = api.model('AuthRequest', auth_request())
 wildcardModel = api.model('Dict', wild_card_model())
-responseModel = api.model('AuthResponse', auth_response(tokenModel, authTenantModel, wildcardModel))
-# responseDetailedModel = api.model('AuthDetailedResponse', auth_detailed_response(tokenModel, wildcardModel))
-responseDetailedModel = api.inherit('AuthDetailedResponse', responseModel, {'data': fields.Nested(wildcardModel, required=True, description="Complete Data.")})
+userModel = api.model('User', auth_user_model(wildcardModel))
+responseModel = api.model('AuthResponse', auth_response(tokenModel, authTenantModel, userModel))
+#responseDetailedModel = api.model('AuthDetailedResponse', auth_detailed_response(tokenModel, userModel, wildcardModel))
+responseDetailedModel = api.inherit('AuthDetailedResponse', responseModel, auth_detailed_response(tokenModel, userModel, wildcardModel))
 errorModel = api.model('Error', error())
 
 
@@ -49,6 +51,8 @@ class AuthResource(Resource):
                 return marshal(response.json(), responseDetailedModel if is_detail_required else responseModel), 201
             else:
                 # TODO Need to raise the proper errors by checking the status like 400, 401, 403 etc...
-                raise abort(response.text.encode('utf8'))
+                return response.text.encode('utf8'), response.status_code
         except KeyError as e:
+            auth_name_space.abort(402, e.__doc__, status=e, statusCode="402")
+        except Exception as e:
             auth_name_space.abort(500, e.__doc__, status=e, statusCode="500")
