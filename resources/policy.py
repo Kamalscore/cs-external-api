@@ -10,18 +10,21 @@ from flask_restplus import Resource, marshal
 from app import api
 from definitions.policy_definations import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
-    policy_view_response, policy_metadata_model, policy_update_response,policy_update_model
+    policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
+    policy_response_list
 from models.swagger_models import error
 from utils.HelperUtils import getClassName, invoke_api
 
 policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy')
+scriptDataModelList = api.model('PolicyDataList', policy_data_model_list())
 policyMetadataModel = api.model('PolicyMetadata', policy_metadata_model())
-createPolicyReqModel = api.model('CreatePolicyRequest', policy_create_model(policyMetadataModel))
+createPolicyReqModel = api.model('CreatePolicyRequest', policy_create_model())
 updatePolicyReqModel = api.model('UpdatePolicyRequestModel', policy_update_model(policyMetadataModel))
 create_policy_data_model = api.model('PolicyData', create_policy_data_model())
 policyUpdateResponse = api.model('UpdatePolicyRequest', policy_update_response())
 PolicyRemovalResModel = api.model('PolicyRemovalResponse', policy_delete_response())
-PolicyViewResponse = api.model("PolicyViewResponse", policy_view_response(policyMetadataModel))
+PolicyViewResponse = api.model("PolicyViewResponse", policy_view_response())
+PolicyResponseModelList = api.model('PolicyListResponse', policy_response_list(scriptDataModelList))
 errorModel = api.model('Error', error())
 script_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -43,7 +46,6 @@ class PolicyResource(Resource):
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self, tenant_id):
-        pass
         try:
             headers = request.headers
             args = request.args
@@ -53,6 +55,29 @@ class PolicyResource(Resource):
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
+            else:
+                raise Exception(value.get("message"))
+        except Exception as e:
+            policy_name_space.abort(response.status_code, message=value.get("message"),
+                                    status=value.get("status"), statusCode=response.status_code)
+
+    @api.doc(name="ListPolicy Request", description='List all the Policies',
+             params={"tenant_id": "Specify the tenant Id",
+                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
+                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}})
+    @policy_name_space.response(model=PolicyResponseModelList, code=200, description='Success', as_list=True)
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id):
+        try:
+            headers = request.headers
+            args = request.args
+            format_params = {'project_id': tenant_id}
+            response = invoke_api(script_api_definition, 'list', format_params, args=args, headers=headers)
+            value = json.loads(response.content.decode('utf-8'))
+            if response.status_code == 200:
+                return marshal(response.json(), PolicyResponseModelList)
             else:
                 raise Exception(value.get("message"))
         except Exception as e:
