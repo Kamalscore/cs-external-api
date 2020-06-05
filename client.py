@@ -20,7 +20,7 @@ def get_token(access_key=str, secret_key=str):
     return requests.post(_url("/v1/auth/tokens"), json=body)
 
 
-def get_projects(access_token=str):
+def get_tenants(access_token=str):
     """
     :param access_token: Access Token
 
@@ -29,3 +29,52 @@ def get_projects(access_token=str):
     """
     headers = {"X-Auth-User": access_token}
     return requests.get(_url("/v1/projects"), headers=headers)
+
+
+def get_tenant(access_token, tenant_id):
+    """
+    :param access_token: Access Token
+    :param tenant_id: Tenant id
+
+    :return: :class:`Response <Response>` object
+    :rtype: requests.Response
+    """
+    headers = {"X-Auth-User": access_token}
+    return requests.get(_url("/v1/projects/"+tenant_id), headers=headers)
+
+
+def delete_tenant(access_token, tenant_id):
+    """
+    :param access_token: Access Token
+    :param tenant_id: Tenant id
+
+    :return: :class:`Response <Response>` object
+    :rtype: requests.Response
+    """
+    headers = {"X-Auth-User": access_token}
+    return requests.delete(_url("/v1/projects/"+tenant_id), headers=headers)
+
+
+def create_tenant(access_token=str(), body=dict):
+    """
+    :param access_token: Access Token
+    :param body: request body
+
+    :return: :class:`Response <Response>` object
+    :rtype: requests.Response
+    """
+    headers = {"X-Auth-User": access_token}
+    return requests.post(_url("/v1/projects"), json=body, headers=headers)
+
+
+def update_tenant(access_token, tenant_id, body):
+    """
+    :param tenant_id:
+    :param access_token: Access Token
+    :param body: request body
+
+    :return: :class:`Response <Response>` object
+    :rtype: requests.Response
+    """
+    headers = {"X-Auth-User": access_token}
+    return requests.put(_url("/v1/projects/"+tenant_id), json=body, headers=headers)
