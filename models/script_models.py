@@ -118,8 +118,9 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
                                 description="Platforms supported by script."),
         'operating_system': fields.List(fields.String(enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
                                         required=True, description="OS supported by script"),
-        'config_type': fields.String(required=True, description="Config type of the script",
-                              enum=['chef', 'ansible', 'puppet', 'shell']),
+        'config_type': fields.String(required=True, description="Config type of the script. "
+                                                                "Create is supported for ansible type scripts alone for now",
+                                     enum=['ansible']),
         'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
