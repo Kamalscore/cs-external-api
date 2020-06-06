@@ -42,11 +42,11 @@ script_api_definition = ScriptURLDefinitions.URLInfo
 
 
 @script_name_space.route("/v1/<string:tenant_id>/scripts")
-class ListScripts(Resource):
+class Scripts(Resource):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(ListScripts))
+        self.logger = logging.getLogger(getClassName(Scripts))
 
     @api.doc(name="ListScripts Request",
              description='List all the scripts.',
@@ -74,13 +74,39 @@ class ListScripts(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
+    @api.doc(
+        name="CreateScript Request", description='Creates a new script.',
+        params={
+            'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
+            'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
+    @api.expect(createScriptReqModel, validate=True)
+    @script_name_space.response(model=createUpdateResponseModel, code=201, description='Created')
+    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def post(self, tenant_id):
+        try:
+            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            format_params = {
+                'tenant_id': tenant_id
+            }
+            args = request.args
+            headers = request.headers
+            response = invoke_api(script_api_definition, 'create', format_params, req_body, args=args, headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
+        except Exception as e:
+            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
 
 @script_name_space.route("/v1/<string:tenant_id>/scripts/<script_id>")
-class DescribeScript(Resource):
+class ScriptByID(Resource):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(DescribeScript))
+        self.logger = logging.getLogger(getClassName(ScriptByID))
 
     @api.doc(name="ViewScript Request",
              description='View script details.',
@@ -116,6 +142,58 @@ class DescribeScript(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
+    @api.doc(name="UpdateScript Request", description='Updates a script.',
+             params={
+                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
+                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
+             })
+    @api.expect(createScriptReqModel, validate=True)
+    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Updated')
+    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def put(self, tenant_id, script_id):
+        try:
+            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            format_params = {
+                'tenant_id': tenant_id,
+                'script_id': script_id
+            }
+            args = request.args
+            headers = request.headers
+            response = invoke_api(script_api_definition, 'update', format_params, req_body, args=args, headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
+        except Exception as e:
+            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+    @api.doc(name="DeleteScript Request", description='Deletes a script.',
+             params={
+                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
+                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
+             })
+    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Deleted')
+    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def delete(self, tenant_id, script_id):
+        try:
+            format_params = {
+                'tenant_id': tenant_id,
+                'script_id': script_id
+            }
+            args = request.args
+            headers = request.headers
+            response = invoke_api(script_api_definition, 'delete', format_params, args=args, headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
+        except Exception as e:
+            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
 
 @script_name_space.route("/v1/<string:tenant_id>/scripts/scan")
 class ScanScript(Resource):
@@ -146,112 +224,7 @@ class ScanScript(Resource):
             headers = request.headers
             response = invoke_api(script_api_definition, 'scan', format_params, req_body, args=args, headers=headers)
             if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
-            else:
-                return marshal(response.json(), errorModel), response.status_code
-        except Exception as e:
-            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
-
-
-@script_name_space.route("/v1/<string:tenant_id>/scripts")
-class CreateScript(Resource):
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(CreateScript))
-
-    @api.doc(name="CreateScript Request", description='Creates a new script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
-    @api.expect(createScriptReqModel, validate=True)
-    @script_name_space.response(model=createUpdateResponseModel, code=201, description='Created')
-    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
-    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
-    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
-    def post(self, tenant_id):
-        try:
-            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
-            format_params = {
-                'tenant_id': tenant_id
-            }
-            args = request.args
-            headers = request.headers
-            response = invoke_api(script_api_definition, 'create', format_params, req_body, args=args, headers=headers)
-            if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
-            else:
-                return marshal(response.json(), errorModel), response.status_code
-        except Exception as e:
-            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
-
-
-@script_name_space.route("/v1/<string:tenant_id>/scripts/<script_id>")
-class UpdateScript(Resource):
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(UpdateScript))
-
-    @api.doc(name="UpdateScript Request", description='Updates a script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'},
-                 'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
-                           'enum': ['chef', 'ansible', 'puppet', 'shell']}
-             })
-    @api.expect(createScriptReqModel, validate=True)
-    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Updated')
-    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
-    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
-    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
-    def put(self, tenant_id, script_id):
-        try:
-            req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
-            format_params = {
-                'tenant_id': tenant_id,
-                'script_id': script_id
-            }
-            args = request.args
-            headers = request.headers
-            response = invoke_api(script_api_definition, 'update', format_params, req_body, args=args, headers=headers)
-            if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
-            else:
-                return marshal(response.json(), errorModel), response.status_code
-        except Exception as e:
-            script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
-
-
-@script_name_space.route("/v1/<string:tenant_id>/scripts/<script_id>")
-class DeleteScript(Resource):
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(DeleteScript))
-
-    @api.doc(name="UpdateScript Request", description='Deletes a script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'},
-                 'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
-                           'enum': ['chef', 'ansible', 'puppet', 'shell']}
-             })
-    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Deleted')
-    @script_name_space.response(model=errorModel, code=400, description='Bad Request')
-    @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
-    @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
-    def put(self, tenant_id, script_id):
-        try:
-            format_params = {
-                'tenant_id': tenant_id,
-                'script_id': script_id
-            }
-            args = request.args
-            headers = request.headers
-            response = invoke_api(script_api_definition, 'delete', format_params, args=args, headers=headers)
-            if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+                return marshal(response.json(), scanResponseModel, ordered=True), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
