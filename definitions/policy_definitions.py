@@ -23,5 +23,9 @@ class PolicyURLDefinitions(object):
         delete=dict(
             path='/v1/{project_id}/policies/{policy_id}',
             method='delete'
+        ),
+        execute=dict(
+            path='/v1/{project_id}/policies/{policy_id}/execute',
+            method='post'
         )
     )

@@ -133,15 +133,29 @@ def policy_data_model_list():
     }
 
 
-def policy_execute_model():
+def policy_execute_model(arguments, service_account):
     return {
-        'test': fields.String(required=True, description="Policy Id", attribute='id')
+        "args": fields.Nested(arguments, required=True, default={}, description="arguments to execute policy"),
+        "service_accounts": fields.List(fields.Nested(service_account),
+                                        required=True, description="service account details to execute the policy")
     }
 
 
-def policy_execute_arguments():
+def service_account_details():
     return {
+        'service_type': fields.String(required=True, description="Type of the service (Eg. Cloud, Monitoring, "
+                                                                 "Virtualization etc.). "),
+        'service_name': fields.String(required=True, description="The service name of the associated service "
+                                                                 "account, for example, AWS,Azure etc"),
+        "id": fields.String(required=True, description="Identifier of the cloud account on which the "
+                                                       "policy will be executed")
+    }
 
+
+def policy_execute_response():
+    return {
+        "job_id": fields.String(required=True, description="Job identifier of the executed policy",
+                                attribute="data.job_id")
     }
 
 

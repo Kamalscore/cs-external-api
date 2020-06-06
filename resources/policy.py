@@ -11,11 +11,13 @@ from app import api
 from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
-    policy_response_list, policy_execute_model
-from models.swagger_models import error
+    policy_response_list, policy_execute_model, service_account_details, policy_execute_response
+from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
 policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy', ordered=True)
+wildcardModel = api.model('Dict', wild_card_model())
+service_account_details = api.model("", service_account_details())
 scriptDataModelList = api.model('PolicyDataList', policy_data_model_list())
 policyMetadataModel = api.model('PolicyMetadata', policy_metadata_model())
 createPolicyReqModel = api.model('CreatePolicyRequest', policy_create_model())
@@ -25,7 +27,9 @@ policyUpdateResponse = api.model('UpdatePolicyRequest', policy_update_response()
 PolicyRemovalResModel = api.model('PolicyRemovalResponse', policy_delete_response())
 PolicyViewResponse = api.model("PolicyViewResponse", policy_view_response())
 PolicyResponseModelList = api.model('PolicyListResponse', policy_response_list(scriptDataModelList))
-executePolicyReqModel = api.model('PolicyExecuteModel', policy_data_model_list())
+executePolicyReqModel = api.model('PolicyExecuteRequestModel', policy_execute_model(wildcardModel,
+                                                                                    service_account_details))
+executePolicyResponseModel = api.model("PolicyExecuteResponseModel", policy_execute_response())
 errorModel = api.model('Error', error())
 script_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -38,8 +42,9 @@ class PolicyResource(Resource):
         self.logger = logging.getLogger(getClassName(PolicyResource))
 
     @api.doc(name="CreatePolicy Request", description='Creates a new Policy.',
+             params={"tenant_id": "Specify the tenant Id for the policy"},
              security=['auth_user', 'auth_token'])
-    @api.expect(createPolicyReqModel, validate=True, ordered=True)
+    @api.expect(createPolicyReqModel, validate=True)
     @policy_name_space.response(model=create_policy_data_model, code=201, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -61,6 +66,7 @@ class PolicyResource(Resource):
                                     status=value.get("status"), statusCode=response.status_code)
 
     @api.doc(name="ListPolicy Request", description='List all the Policies',
+             params={"tenant_id": "Specify the tenant Id for the policy"},
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyResponseModelList, code=200, description='Success', as_list=True)
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -92,10 +98,8 @@ class PolicyResourceById(Resource):
 
     @api.doc(name="View Policy Request", description='view the created policy with policy id and tenant id',
              params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to retrieve",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}
-                     })
+                     "policy_id": "specify the policy id to retrieve"},
+             security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyViewResponse, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -117,10 +121,8 @@ class PolicyResourceById(Resource):
 
     @api.doc(name="Update Policy Request", description='update policy with policy id and tenant id',
              params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to update",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}
-                     })
+                     "policy_id": "specify the policy id to update"},
+             security=['auth_user', 'auth_token'])
     @api.expect(updatePolicyReqModel, validate=True)
     @policy_name_space.response(model=policyUpdateResponse, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -144,10 +146,8 @@ class PolicyResourceById(Resource):
 
     @api.doc(name="Delete Policy Request", description='delete policy with policy id and tenant id',
              params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to delete",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}
-                     })
+                     "policy_id": "specify the policy id to delete"},
+             security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyRemovalResModel, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -168,7 +168,7 @@ class PolicyResourceById(Resource):
                                     status=value.get("status"), statusCode=response.status_code)
 
 
-@policy_name_space.route("/v1/<string:tenant_id>/policies/<string:policy_id>/<string:action_name>")
+@policy_name_space.route("/v1/<string:tenant_id>/policies/<string:policy_id>/execute")
 class PolicyActionsByName(Resource):
 
     def __init__(self, *args, **kwargs):
@@ -177,26 +177,22 @@ class PolicyActionsByName(Resource):
 
     @api.doc(name="Execute Policy Request", description='Execute a Policy',
              params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to retrieve",
-                     "action_name": "action to be performed example:execute",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}
-                     })
+                     "policy_id": "specify the policy id to retrieve"}, security=['auth_user', 'auth_token'])
     @api.expect(executePolicyReqModel, validate=True)
-    # @policy_name_space.response(model=executeResponseModel, code=201, description='Success')
+    @policy_name_space.response(model=executePolicyResponseModel, code=201, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
-    def post(self, tenant_id, policy_id, action):
+    def post(self, tenant_id, policy_id):
         try:
             headers = request.headers
             args = request.args
-            format_params = {'project_id': tenant_id}
-            response = invoke_api(script_api_definition, 'create', format_params, args=args, headers=headers,
+            format_params = {'project_id': tenant_id, 'policy_id': policy_id}
+            response = invoke_api(script_api_definition, 'execute', format_params, args=args, headers=headers,
                                   req_body=request.json)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
-                return marshal(response.json(), create_policy_data_model)
+                return marshal(response.json(), executePolicyResponseModel)
             else:
                 raise Exception(value.get("message"))
         except Exception as e:
