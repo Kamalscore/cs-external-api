@@ -7,10 +7,15 @@ from flask_marshmallow import Marshmallow
 from flask_restplus import Api
 
 authorizations = {
-    'apiKey': {
+    'auth_user': {
         'type': 'apiKey',
         'in': 'header',
         'name': 'X-Auth-User'
+    },
+    'auth_token': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-Auth-Token'
     }
 }
 

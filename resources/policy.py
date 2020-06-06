@@ -11,11 +11,11 @@ from app import api
 from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
-    policy_response_list
+    policy_response_list, policy_execute_model
 from models.swagger_models import error
 from utils.HelperUtils import getClassName, invoke_api
 
-policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy')
+policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy', ordered=True)
 scriptDataModelList = api.model('PolicyDataList', policy_data_model_list())
 policyMetadataModel = api.model('PolicyMetadata', policy_metadata_model())
 createPolicyReqModel = api.model('CreatePolicyRequest', policy_create_model())
@@ -25,6 +25,7 @@ policyUpdateResponse = api.model('UpdatePolicyRequest', policy_update_response()
 PolicyRemovalResModel = api.model('PolicyRemovalResponse', policy_delete_response())
 PolicyViewResponse = api.model("PolicyViewResponse", policy_view_response())
 PolicyResponseModelList = api.model('PolicyListResponse', policy_response_list(scriptDataModelList))
+executePolicyReqModel = api.model('PolicyExecuteModel', policy_data_model_list())
 errorModel = api.model('Error', error())
 script_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -36,11 +37,9 @@ class PolicyResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyResource))
 
-    @api.doc(name="CreatePolicy Request", description='Create a new policy.',
-             params={"tenant_id": "Specify the tenant Id",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}})
-    @api.expect(createPolicyReqModel, validate=True)
+    @api.doc(name="CreatePolicy Request", description='Creates a new Policy.',
+             security=['auth_user', 'auth_token'])
+    @api.expect(createPolicyReqModel, validate=True, ordered=True)
     @policy_name_space.response(model=create_policy_data_model, code=201, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -62,9 +61,7 @@ class PolicyResource(Resource):
                                     status=value.get("status"), statusCode=response.status_code)
 
     @api.doc(name="ListPolicy Request", description='List all the Policies',
-             params={"tenant_id": "Specify the tenant Id",
-                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
-                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}})
+             security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyResponseModelList, code=200, description='Success', as_list=True)
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -91,7 +88,7 @@ class PolicyResourceById(Resource):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(PolicyResource))
+        self.logger = logging.getLogger(getClassName(PolicyResourceById))
 
     @api.doc(name="View Policy Request", description='view the created policy with policy id and tenant id',
              params={"tenant_id": "Specify the tenant Id for the policy",
@@ -164,6 +161,42 @@ class PolicyResourceById(Resource):
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), PolicyRemovalResModel), 200
+            else:
+                raise Exception(value.get("message"))
+        except Exception as e:
+            policy_name_space.abort(response.status_code, message=value.get("message"),
+                                    status=value.get("status"), statusCode=response.status_code)
+
+
+@policy_name_space.route("/v1/<string:tenant_id>/policies/<string:policy_id>/<string:action_name>")
+class PolicyActionsByName(Resource):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(PolicyActionsByName))
+
+    @api.doc(name="Execute Policy Request", description='Execute a Policy',
+             params={"tenant_id": "Specify the tenant Id for the policy",
+                     "policy_id": "specify the policy id to retrieve",
+                     "action_name": "action to be performed example:execute",
+                     "X-Auth-User": {'description': 'Auth User', 'in': 'header', 'type': 'str'},
+                     "X-Auth-Token": {'description': 'Auth Token', 'in': 'header', 'type': 'str'}
+                     })
+    @api.expect(executePolicyReqModel, validate=True)
+    # @policy_name_space.response(model=executeResponseModel, code=201, description='Success')
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def post(self, tenant_id, policy_id, action):
+        try:
+            headers = request.headers
+            args = request.args
+            format_params = {'project_id': tenant_id}
+            response = invoke_api(script_api_definition, 'create', format_params, args=args, headers=headers,
+                                  req_body=request.json)
+            value = json.loads(response.content.decode('utf-8'))
+            if response.status_code == 200:
+                return marshal(response.json(), create_policy_data_model)
             else:
                 raise Exception(value.get("message"))
         except Exception as e:

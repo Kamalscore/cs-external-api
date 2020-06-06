@@ -5,10 +5,8 @@ from flask_restplus import Resource, marshal
 
 from app import api
 from client import get_tenants, create_tenant, get_tenant, delete_tenant, update_tenant
-
 from models.swagger_models import tenant_request, error, tenant_response, tenant_update_request, tenant_data_model, \
     tenant_delete_response, wild_card_model, tenant_create_response, tenant_update_response
-
 from utils.HelperUtils import getClassName
 
 tenant_name_space = api.namespace(name='Tenants', path="/", description='Manage Tenants')

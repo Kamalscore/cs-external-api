@@ -97,7 +97,7 @@ def policy_view_response():
         "git_content_username": fields.String(required=True,
                                               description="Username of Git repo if repo is authenticated",
                                               attribute="data.policies.content_username"),
-        "git content_path": fields.String(required=True, description="Root path of the policy in git repo.",
+        "git_content_path": fields.String(required=True, description="Root path of the policy in git repo.",
                                           attribute="data.policies.content_path"),
         "classification": fields.String(required=True, description="Policies are classified based on the basis of\
          the activity they perform, for example provisioning, Account Management, Utilization, etc.\
@@ -130,6 +130,18 @@ def policy_data_model_list():
                                               description="is recommendations configured on failure of policy"),
         "is_parameterized": fields.Boolean(required=False,
                                            description="is parameter required to execute policy")
+    }
+
+
+def policy_execute_model():
+    return {
+        'test': fields.String(required=True, description="Policy Id", attribute='id')
+    }
+
+
+def policy_execute_arguments():
+    return {
+
     }
 
 
