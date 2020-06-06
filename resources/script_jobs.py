@@ -30,12 +30,9 @@ class DescribeScriptJob(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(DescribeScriptJob))
 
-    @api.doc(name="ViewScriptJob Request",
+    @api.doc(id='DescribeScriptJob', name="ViewScriptJob Request",
              description='View script job details.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
-             })
+             security=['auth_user', 'auth_token'])
     @script_job_name_space.response(model=scriptJobDataModelView, code=200, description='Success')
     @script_job_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_job_name_space.response(model=errorModel, code=401, description='Unauthorized')

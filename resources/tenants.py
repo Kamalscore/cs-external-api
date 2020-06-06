@@ -6,16 +6,28 @@ from flask_restplus import Resource, marshal
 from app import api
 from client import get_tenants, create_tenant, get_tenant, delete_tenant, update_tenant
 from models.swagger_models import tenant_request, error, tenant_response, tenant_update_request, tenant_data_model, \
-    tenant_delete_response, wild_card_model, tenant_create_response, tenant_update_response
+    tenant_delete_response, wild_card_model, tenant_create_response, tenant_update_response, list_tenant, get_tenant_model
 from utils.HelperUtils import getClassName
 
+get_id_attribute = 'id'
 tenant_name_space = api.namespace(name='Tenants', path="/", description='Manage Tenants')
 wildcardModel = api.model('TenantMetadata', wild_card_model())
+listTenantModel = api.model('ListTenantHolder', list_tenant())
+getTenantModel = api.model('GetTenantModel', list_tenant(get_id_attribute))
 tenantDataModel = api.model('TenantData', tenant_data_model())
-createTenantReqModel = api.model('CreateTenantRequest', tenant_request(wildcardModel))
+createTenantReqModel = api.model('createTenantRequest', tenant_request(wildcardModel), description="Creates a new "
+                                                                                                   "tenant under a "
+                                                                                                   "CoreStack "
+                                                                                                   "account. There "
+                                                                                                   "can be multiple "
+                                                                                                   "tenants within a "
+                                                                                                   "CoreStack "
+                                                                                                   "account.")
 updateTenantReqModel = api.model('UpdateTenantRequest', tenant_update_request(wildcardModel))
 tenantRemovalResModel = api.model('TenantRemovalResponse', tenant_delete_response())
-responseModel = api.model('TenantResponse', tenant_response(wildcardModel))
+listResponseModel = api.model('ListTenantResponse', tenant_response(listTenantModel))
+# getTenantModel = api.model('GetTenantModel', get_tenant_model())
+getResponseModel = api.inherit('GetTenantResponse', getTenantModel, get_tenant_model())
 createResponseModel = api.model('TenantCreateResponse', tenant_create_response())
 updateResponseModel = api.model('TenantUpdateResponse', tenant_update_response())
 errorModel = api.model('Error', error())
@@ -28,7 +40,9 @@ class TenantResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(TenantResource))
 
-    @api.doc(name="CreateTenant Request", description='Creates a new tenant.', security='apiKey')
+    @api.doc(name="CreateTenant Request", description='Creates a new tenant under a CoreStack account. There can be '
+                                                      'multiple tenants within a CoreStack account.',
+             security='apiKey')
     @api.expect(createTenantReqModel, validate=True)
     @tenant_name_space.response(model=createResponseModel, code=201, description='Created')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -38,7 +52,8 @@ class TenantResource(Resource):
         try:
             accessToken = request.headers.get("X-Auth-User")
             requestBody = request.json
-            requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
+            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
+            requestBody["status"] = "active"
             requestBody["project_master_id"] = requestBody.get("account_id", None)
             response = create_tenant(accessToken, requestBody)
             if response.status_code == 200:
@@ -48,8 +63,13 @@ class TenantResource(Resource):
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="ListTenants Request", description='List all the tenants.', security='apiKey')
-    @tenant_name_space.response(model=responseModel, code=200, description='Success', as_list=True)
+    @api.doc(name="ListTenant", description="There can be multiple tenants within a CoreStack account. List "
+                                            "all tenants the user is mapped under a CoreStack account. If "
+                                            "there are 3 tenants and user performing this operation has "
+                                            "access to only 2 tenants then only those 2 tenants will be "
+                                            "returned.",
+             security='apiKey')
+    @tenant_name_space.response(model=listResponseModel, code=200, description='Success', as_list=True)
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @tenant_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -58,11 +78,11 @@ class TenantResource(Resource):
             accessToken = request.headers.get("X-Auth-User")
             response = get_tenants(accessToken)
             if response.status_code == 200:
-                responseJson = marshal(response.json(), responseModel)
-                for t in responseJson.get('tenants'):
-                    t['account_name'] = t.pop('project_master_name', None)
-                    t['account_id'] = t.pop('project_master_id', None)
-                    t.pop('preferences', None)
+                responseJson = marshal(response.json(), listResponseModel)
+                # for t in responseJson.get('tenants'):
+                    # t['account_name'] = t.pop('project_master_name', None)
+                    # t['account_id'] = t.pop('project_master_id', None)
+                    # t.pop('preferences', None)
                 return responseJson, 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
@@ -77,8 +97,11 @@ class TenantResourceById(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(TenantResourceById))
 
-    @api.doc(name="GetTenant Request", description='Gets the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
-    @tenant_name_space.response(model=responseModel, code=200, description='Success')
+    @api.doc(name="GetTenant Request", description="Retreive a tenant by its Id.  If you're unsure of the tenant_id, "
+                                                   "use listTenant operation to list all tenants under a CoreStack "
+                                                   "account and fetch the needed tenant_id.",
+             params={'tenant_id': 'Id of the tenant ot be retrieved.'}, security='apiKey')
+    @tenant_name_space.response(model=getResponseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @tenant_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -89,18 +112,20 @@ class TenantResourceById(Resource):
             if response.status_code == 200:
                 t = response.json()
                 t = t.pop('data', {})
-                t.pop('status', None)
-                t.pop('message', None)
-                t.pop('claas_metadata', None)
-                t['account_name'] = t.pop('project_master_name', None)
-                t['account_id'] = t.pop('project_master_id', None)
-                return t, 200
+                # t.pop('status', None)
+                # t.pop('message', None)
+                # t.pop('claas_metadata', None)
+                # t['account_name'] = t.pop('project_master_name', None)
+                # t['account_id'] = t.pop('project_master_id', None)
+                return marshal(t, getResponseModel, ordered=True), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="PutTenant Request", description='Updates the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
+    @api.doc(name="PutTenant Request", description="Update a tenant's status, description & metadata using its id. No "
+                                                   "operation can be performed when a tenant is made inactive.",
+             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
     @api.expect(updateTenantReqModel, validate=True)
     @tenant_name_space.response(model=updateResponseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -110,19 +135,20 @@ class TenantResourceById(Resource):
         try:
             accessToken = request.headers.get("X-Auth-User")
             requestBody = request.json
-            requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
-            requestBody["project_master_id"] = requestBody.get("account_id", None)
-            requestBody.pop("account_id", None)
+            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
+            requestBody["project_master_id"] = requestBody.pop("account_id", None)
             response = update_tenant(accessToken, tenant_id, requestBody)
             if response.status_code == 200:
-                t = response.json()
-                return {'id': t.get('data', {}).get('project_id', None)}, 200
+                return marshal(response.json(), updateResponseModel), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
             tenant_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="DeleteTenant Request", description='Deletes the tenant with the provided id.', params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
+    @api.doc(name="DeleteTenant Request", description='Delete a tenant by its Id. Cannot undo this action, so be '
+                                                      'cautious when performing this operation. Use updateTenant to '
+                                                      'make the tenant as inactive if required.',
+             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
     @tenant_name_space.response(model=tenantRemovalResModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')

@@ -48,11 +48,10 @@ class Scripts(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(Scripts))
 
-    @api.doc(name="ListScripts Request",
+    @api.doc(id='ListScript', name="ListScripts Request",
              description='List all the scripts.',
+             security=['auth_user', 'auth_token'],
              params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'},
                  'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
                            'enum': ['chef', 'ansible', 'puppet', 'shell']}
              })
@@ -74,11 +73,9 @@ class Scripts(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(
-        name="CreateScript Request", description='Creates a new script.',
-        params={
-            'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-            'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
+    @api.doc(id='CreateScript',
+             name="CreateScript Request", description='Creates a new script.',
+             security=['auth_user', 'auth_token'])
     @api.expect(createScriptReqModel, validate=True)
     @script_name_space.response(model=createUpdateResponseModel, code=201, description='Created')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -108,12 +105,9 @@ class ScriptByID(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(ScriptByID))
 
-    @api.doc(name="ViewScript Request",
+    @api.doc(id='DescribeScript', name="DescribeScript Request",
              description='View script details.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
-             })
+             security=['auth_user', 'auth_token'])
     @script_name_space.response(model=scriptDataModelView, code=200, description='Success')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -142,11 +136,8 @@ class ScriptByID(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="UpdateScript Request", description='Updates a script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
-             })
+    @api.doc(id='UpdateScript', name="UpdateScript Request", description='Updates a script.',
+             security=['auth_user', 'auth_token'])
     @api.expect(createScriptReqModel, validate=True)
     @script_name_space.response(model=createUpdateResponseModel, code=200, description='Updated')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -169,11 +160,8 @@ class ScriptByID(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(name="DeleteScript Request", description='Deletes a script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}
-             })
+    @api.doc(id='DeleteScript', name="DeleteScript Request", description='Deletes a script.',
+             security=['auth_user', 'auth_token'])
     @script_name_space.response(model=createUpdateResponseModel, code=200, description='Deleted')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -202,13 +190,12 @@ class ScanScript(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(ScanScript))
 
-    @api.doc(name="ScanScript Request", description='Scans a script to check if all dependencies(if any) are '
-                                                    'satisfied. This API will also return '
-                                                    'parameters available in script for chef and '
-                                                    'parameter & hosts available in the script for ansible',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
+    @api.doc(id='ScanScript', name="ScanScript Request",
+             description='Scans a script to check if all dependencies(if any) are '
+                         'satisfied. This API will also return '
+                         'parameters available in script for chef and '
+                         'parameter & hosts available in the script for ansible',
+             security=['auth_user', 'auth_token'])
     @api.expect(scanScriptReqModel, validate=True)
     @script_name_space.response(model=createUpdateResponseModel, code=201, description='Scanned')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -238,10 +225,9 @@ class ExecuteScript(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(ExecuteScript))
 
-    @api.doc(name="Execute Script Request", description='Execute a script.',
-             params={
-                 'X-Auth-User': {'description': 'Username', 'in': 'header', 'type': 'str'},
-                 'X-Auth-Token': {'description': 'Auth token', 'in': 'header', 'type': 'str'}})
+    @api.doc(id='ExecuteScript',
+             name="Execute Script Request", description='Execute a script.',
+             security=['auth_user', 'auth_token'])
     @api.expect(executeScriptReqModel, validate=True)
     @script_name_space.response(model=executeResponseModel, code=200, description='Execution Initiated')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
