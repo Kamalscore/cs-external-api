@@ -50,3 +50,28 @@ def inventory_category_count_response():
                                         description="Inventory category count details",
                                         attribute='data.all')
     }
+
+
+def inventory_resource_request_filter_data_model():
+    return {
+        'cloud_account': fields.List(fields.String, required=False, description="Id of the cloud account"),
+        'category': fields.String(required=False, description="Name for the category"),
+        'component': fields.String(required=False, description="Name for the component"),
+        'resource': fields.String(required=False, description="Name for the resource"),
+    }
+
+
+def inventory_resource_request(inventory_resource_request_filter_data_model_list):
+    return {
+        'filters': fields.Nested(inventory_resource_request_filter_data_model_list, required=False,
+                                 description="Filter resource details")
+    }
+
+
+def inventory_response_details():
+    return {
+        'count': fields.String(required=True, description="inventory count summary details",
+                               attribute='data.total_count'),
+        'resource_details': fields.List(fields.Raw, required=True, description="inventory summary details",
+                                        attribute='data.resource_list')
+    }
