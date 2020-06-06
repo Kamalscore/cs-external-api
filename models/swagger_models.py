@@ -211,9 +211,9 @@ def list_tenant(id_attribute='project_master_id'):
     }
 
 
-def get_tenant_model():
+def get_tenant_model(metadataModel):
     return {
-        'metadata': fields.String(required=True, description="metadata is a freeform JSON. It allows to store "
+        'metadata': fields.Nested(metadataModel, required=True, description="metadata is a freeform JSON. It allows to store "
                                                              "custom keys and values. It will be useful for "
                                                              "storing information about an external applications "
                                                              "that will refer to CoreStack tenant"),

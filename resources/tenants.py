@@ -27,7 +27,7 @@ updateTenantReqModel = api.model('UpdateTenantRequest', tenant_update_request(wi
 tenantRemovalResModel = api.model('TenantRemovalResponse', tenant_delete_response())
 listResponseModel = api.model('ListTenantResponse', tenant_response(listTenantModel))
 # getTenantModel = api.model('GetTenantModel', get_tenant_model())
-getResponseModel = api.inherit('GetTenantResponse', getTenantModel, get_tenant_model())
+getResponseModel = api.inherit('GetTenantResponse', getTenantModel, get_tenant_model(wildcardModel))
 createResponseModel = api.model('TenantCreateResponse', tenant_create_response())
 updateResponseModel = api.model('TenantUpdateResponse', tenant_update_response())
 errorModel = api.model('Error', error())
@@ -42,7 +42,7 @@ class TenantResource(Resource):
 
     @api.doc(name="CreateTenant Request", description='Creates a new tenant under a CoreStack account. There can be '
                                                       'multiple tenants within a CoreStack account.',
-             security='apiKey')
+             security=['auth_user', 'auth_token'])
     @api.expect(createTenantReqModel, validate=True)
     @tenant_name_space.response(model=createResponseModel, code=201, description='Created')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -68,7 +68,7 @@ class TenantResource(Resource):
                                             "there are 3 tenants and user performing this operation has "
                                             "access to only 2 tenants then only those 2 tenants will be "
                                             "returned.",
-             security='apiKey')
+             security=['auth_user', 'auth_token'])
     @tenant_name_space.response(model=listResponseModel, code=200, description='Success', as_list=True)
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -100,7 +100,7 @@ class TenantResourceById(Resource):
     @api.doc(name="GetTenant Request", description="Retreive a tenant by its Id.  If you're unsure of the tenant_id, "
                                                    "use listTenant operation to list all tenants under a CoreStack "
                                                    "account and fetch the needed tenant_id.",
-             params={'tenant_id': 'Id of the tenant ot be retrieved.'}, security='apiKey')
+             params={'tenant_id': 'Id of the tenant ot be retrieved.'}, security=['auth_user', 'auth_token'])
     @tenant_name_space.response(model=getResponseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -125,7 +125,7 @@ class TenantResourceById(Resource):
 
     @api.doc(name="PutTenant Request", description="Update a tenant's status, description & metadata using its id. No "
                                                    "operation can be performed when a tenant is made inactive.",
-             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
+             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security=['auth_user', 'auth_token'])
     @api.expect(updateTenantReqModel, validate=True)
     @tenant_name_space.response(model=updateResponseModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -148,7 +148,7 @@ class TenantResourceById(Resource):
     @api.doc(name="DeleteTenant Request", description='Delete a tenant by its Id. Cannot undo this action, so be '
                                                       'cautious when performing this operation. Use updateTenant to '
                                                       'make the tenant as inactive if required.',
-             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security='apiKey')
+             params={'tenant_id': 'Specify the tenant Id associated with the tenant'}, security=['auth_user', 'auth_token'])
     @tenant_name_space.response(model=tenantRemovalResModel, code=200, description='Success')
     @tenant_name_space.response(model=errorModel, code=400, description='Bad Request')
     @tenant_name_space.response(model=errorModel, code=401, description='Unauthorized')
