@@ -157,7 +157,7 @@ def tenant_update_request(tenantMetadataModel):
                                     description="Id of the CoreStack account under which the tenant to be updated."),
         'status': fields.String(required=False, description="Status of the tenant can be active or inactive. When "
                                                             "inactive no operations can be performed within that "
-                                                            "tenant.", enum=EnumStatus.member_names_),
+                                                            "tenant.", enum=["active", "inactive"]),
     }
 
 
