@@ -21,4 +21,4 @@ api.add_namespace(inventory_name_space)
 
 if __name__ == '__main__':
     # Enable or disable the mask field, by default X-Fields
-    app.run(debug=True, port=5001)
+    app.run(host='0.0.0.0', debug=True, port=4000)
