@@ -5,6 +5,7 @@ from flask_restplus import Resource, marshal
 
 from app import api
 from client import get_tenants, create_tenant, get_tenant, delete_tenant, update_tenant
+from config.marshalling import custom_marshal
 from models.swagger_models import tenant_request, error, tenant_response, tenant_update_request, tenant_data_model, \
     tenant_delete_response, wild_card_model, tenant_create_response, tenant_update_response, list_tenant, get_tenant_model
 from utils.HelperUtils import getClassName
@@ -117,7 +118,7 @@ class TenantResourceById(Resource):
                 # t.pop('claas_metadata', None)
                 # t['account_name'] = t.pop('project_master_name', None)
                 # t['account_id'] = t.pop('project_master_id', None)
-                return marshal(t, getResponseModel, ordered=True), 200
+                return custom_marshal(t, getResponseModel, ordered=True, output_key_enabled=True), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
