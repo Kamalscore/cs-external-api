@@ -24,11 +24,11 @@ script_job_api_definition = ScripJobURLDefinitions.URLInfo
 
 
 @script_job_name_space.route("/v1/<string:tenant_id>/scriptjobs/<script_job_id>")
-class ScriptResource(Resource):
+class DescribeScriptJob(Resource):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger(getClassName(ScriptResource))
+        self.logger = logging.getLogger(getClassName(DescribeScriptJob))
 
     @api.doc(name="ViewScriptJob Request",
              description='View script job details.',

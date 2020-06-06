@@ -99,6 +99,5 @@ def invoke_api(definition, action, format_params=None, req_body=None, args=None,
     url = _url(url)
     if args:
         url = url + '?' + urlencode(args)
-
     return requests.request(definition.get(action, {}).get('method'), url, data=json.dumps(req_body),
                             headers=headers)

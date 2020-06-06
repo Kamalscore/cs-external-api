@@ -1,0 +1,19 @@
+# This file is subject to the terms and conditions defined in the file
+# 'LICENSE.txt', which is part of this source code package.
+
+
+class InventoryURLDefinitions(object):
+    URLInfo = dict(
+        get_count_details=dict(
+            path='/v2/{tenant_id}/resources/count',
+            method='post'
+        ),
+        get_filter_details=dict(
+            path='/v2/{tenant_id}/resources/filters',
+            method='get'
+        ),
+        get_resource_details=dict(
+            path='/v2/5dc50f2cff514807b70500ad/resources',
+            method='post'
+        )
+    )

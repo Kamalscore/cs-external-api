@@ -92,6 +92,20 @@ def script_info_model():
     }
 
 
+def script_data_model_scan(script_info_model):
+    return {
+        'config_type': fields.String(required=True, description="Config type of the script",
+                                     enum=['chef', 'ansible', 'puppet', 'shell']),
+        'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
+        'dependencies': fields.List(
+            fields.Nested(script_info_model, description='Details of the dependent scripts if any')),
+        "file_authentication": fields.Boolean(required=True, description='Flag to indicate authentication required for '
+                                                                         'downloading the script',
+                                              default=False),
+        'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts")
+    }
+
+
 def script_data_model_create(script_info_model, wild_card_model, minimum_requirements_model):
     return {
         'name': fields.String(required=True, description="Script Name"),
@@ -105,7 +119,7 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
         'operating_system': fields.List(fields.String(enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
                                         required=True, description="OS supported by script"),
         'config_type': fields.String(required=True, description="Config type of the script",
-                                     enum=['chef', 'ansible', 'puppet', 'shell']),
+                              enum=['chef', 'ansible', 'puppet', 'shell']),
         'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
@@ -118,17 +132,6 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
         'minimum_requirement': fields.Nested(minimum_requirements_model,
                                              description="Minimum requirements to install the script"),
         'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts"),
-        #                                attribute='data.playbook_path'),
-        # 'cookbook_name': fields.String(required=True, description="Cookbook path - available for chef alone",
-        #                                attribute='data.cookbook_name'),
-        # 'shell_script_path': fields.String(required=True, description="Shell script path - available for shell alone",
-        #                                    attribute='data.shell_script_path'),
-        # 'shell_script_name': fields.String(required=True, description="Shell script path - available for shell alone",
-        #                                    attribute='data.shell_script_name'),
-        # 'module_path': fields.String(required=True, description="Module path - available for puppet alone",
-        #                              attribute='data.module_path'),
-        # 'module_name': fields.String(required=True, description="Module path - available for puppet alone.",
-        #                              attribute='data.module_name'),
         'parameters': fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
     }
 
@@ -179,6 +182,15 @@ def script_execute_job_input_model(wild_card_model):
 def script_execute_response_model():
     return {
         'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.job_id')
+    }
+
+
+def script_scan_response_model(wild_card_model):
+    return {
+        "scanned_parameters": fields.Nested(wild_card_model, required=True,
+                                            description="Scanned Parameters of the script.", attribute='data'),
+        "hosts": fields.List(fields.String, required=True, description='Hosts available in the playbook if any',
+                             skip_none=True)
     }
 
 

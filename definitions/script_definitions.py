@@ -14,6 +14,11 @@ class ScriptURLDefinitions(object):
             path='/v1/{tenant_id}/scripts/{script_id}',
             method='get'
         ),
+        scan=dict(
+            path='/v1/{tenant_id}/scripts',
+            method='post',
+            query_params=dict(action='scan')
+        ),
         create=dict(
             path='/v1/{tenant_id}/scripts',
             method='post'
@@ -21,6 +26,10 @@ class ScriptURLDefinitions(object):
         update=dict(
             path='/v1/{tenant_id}/scripts/{script_id}',
             method='put'
+        ),
+        delete=dict(
+            path='/v1/{tenant_id}/scripts/{script_id}',
+            method='delete'
         ),
         execute=dict(
             path='/v1/{tenant_id}/scripts',
