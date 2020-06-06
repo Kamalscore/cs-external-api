@@ -1,7 +1,10 @@
 # This file is subject to the terms and conditions defined in the file
 # 'LICENSE.txt', which is part of this source code package.
+import sys
 
 from app import api, app
+from config.LogManager import initLogManager
+from config.config_loader import _processTemplate
 from resources.auth import auth_name_space
 from resources.cloud_account import cloud_account_name_space
 from resources.inventory import inventory_name_space
@@ -21,5 +24,11 @@ api.add_namespace(inventory_name_space)
 api.add_namespace(cloud_account_name_space)
 
 if __name__ == '__main__':
-    # Enable or disable the mask field, by default X-Fields
+    # For loading the config file, take the location from command line
+    # configFilePath = ['/tmp/etc/config.ini']
+    # _processTemplate(sys.argv[1:])
+    _processTemplate(["\tmp\api-wrapper\etc\config.ini"])
+    # Load the logging related configuration ans prepare the logging.
+    initLogManager()
+
     app.run(host='0.0.0.0', debug=True, port=4000)
