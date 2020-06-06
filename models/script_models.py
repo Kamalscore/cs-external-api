@@ -92,6 +92,16 @@ def script_info_model():
     }
 
 
+def script_data_model_scan(script_info_model):
+    return {
+        'config_type': fields.String(required=True, description="Config type of the script",
+                                     enum=['chef', 'ansible', 'puppet', 'shell']),
+        'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
+        'dependencies': fields.List(
+            fields.Nested(script_info_model, description='Details of the dependent scripts if any'))
+    }
+
+
 def script_data_model_create(script_info_model, wild_card_model, minimum_requirements_model):
     return {
         'name': fields.String(required=True, description="Script Name"),
@@ -179,6 +189,15 @@ def script_execute_job_input_model(wild_card_model):
 def script_execute_response_model():
     return {
         'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.job_id')
+    }
+
+
+def script_scan_response_model(wild_card_model):
+    return {
+        "scanned_parameters": fields.Nested(wild_card_model, required=True,
+                                            description="Scanned Parameters of the script."),
+        "hosts": fields.List(fields.String, required=True, description='Hosts available in the playbook if any',
+                             skip_none=True)
     }
 
 
