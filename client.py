@@ -3,10 +3,10 @@
 
 import requests
 
-from utils.Constants import QA_ENDPOINT_URL_DEFAULT_VALUE
+from utils.Constants import CS_ENDPOINT_URL_DEFAULT_VALUE
 
 
-def _url(path, base_url=QA_ENDPOINT_URL_DEFAULT_VALUE):
+def _url(path, base_url=CS_ENDPOINT_URL_DEFAULT_VALUE):
     return base_url + path
 
 
