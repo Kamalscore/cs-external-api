@@ -133,6 +133,35 @@ def policy_data_model_list():
     }
 
 
+def policy_job_response():
+    return {
+        "job_id": fields.String(required=True, description="Job Id", attribute='data.id'),
+        "name": fields.String(required=True, description="Name of the Job", attribute='data.name'),
+        "status": fields.String(required=True, description="Status of job execution", attribute='data.status'),
+        "status_reason": fields.String(required=True, description="Reason for the job status",
+                                       attribute='data.status_reason'),
+        "engine": fields.String(required=True, description="Policy engine used for job execution",
+                                attribute='data.engine'),
+        "arguments": fields.String(required=True, description="arguments provided for job execution",
+                                   attribute='data.args'),
+        "service_accounts": fields.String(required=True, description="Service account used for job execution",
+                                          attribute='data.service_accounts'),
+        "execution_type": fields.String(required=True, description="Policy execution type can be on demand or scheduled"
+                                        , attribute='data.execution_type'),
+        "created_by": fields.String(required=True, description="Policy Job created by", attribute='data.created_by'),
+        "created_at": fields.String(required=True, description="Policy Job create time", attribute='data.created_at'),
+        "updated_by": fields.String(required=True, description="Policy Job updated by", attribute='data.updated_by'),
+        "updated_at": fields.String(required=True, description="Policy Job update time", attribute='data.updated_at'),
+        "tenant_name": fields.String(required=True, description="tenant name where job was created",
+                                     attribute='data.project_name'),
+        "policy_id": fields.String(required=True, description="Policy id of the Policy executed",
+                                   attribute='data.policy_id'),
+        "policy_name": fields.String(required=True, description="Policy id of the Policy executed",
+                                     attribute='data.policy_name')
+
+    }
+
+
 def policy_execute_model(arguments, service_account):
     return {
         "args": fields.Nested(arguments, required=True, default={}, description="arguments to execute policy"),

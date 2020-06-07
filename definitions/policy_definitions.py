@@ -27,5 +27,9 @@ class PolicyURLDefinitions(object):
         execute=dict(
             path='/v1/{project_id}/policies/{policy_id}/execute',
             method='post'
+        ),
+        job_details=dict(
+            path='/v1/{project_id}/policy_jobs/{job_id}',
+            method='get'
         )
     )

@@ -11,11 +11,11 @@ from app import api
 from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
-    policy_response_list, policy_execute_model, service_account_details, policy_execute_response
+    policy_response_list, policy_execute_model, service_account_details, policy_execute_response, policy_job_response
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
-policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy', ordered=True)
+policy_name_space = api.namespace(name='Policy', path="/", description='Manage Policy')
 wildcardModel = api.model('Dict', wild_card_model())
 service_account_details = api.model("", service_account_details())
 scriptDataModelList = api.model('PolicyDataList', policy_data_model_list())
@@ -30,6 +30,7 @@ PolicyResponseModelList = api.model('PolicyListResponse', policy_response_list(s
 executePolicyReqModel = api.model('PolicyExecuteRequestModel', policy_execute_model(wildcardModel,
                                                                                     service_account_details))
 executePolicyResponseModel = api.model("PolicyExecuteResponseModel", policy_execute_response())
+jobDetailsResponseModel = api.model("JobExecutionDetailsResponseModel", policy_job_response())
 errorModel = api.model('Error', error())
 script_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -193,6 +194,37 @@ class PolicyActionsByName(Resource):
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
+            else:
+                raise Exception(value.get("message"))
+        except Exception as e:
+            policy_name_space.abort(response.status_code, message=value.get("message"),
+                                    status=value.get("status"), statusCode=response.status_code)
+
+
+@policy_name_space.route("/v1/<string:tenant_id>/policy_jobs/<string:job_id>")
+class PolicyJobs(Resource):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(PolicyJobs))
+
+    @api.doc(name="Policy Job details request", description='Retrieve policy job details using the job id',
+             params={"tenant_id": "Specify the tenant Id for the policy",
+                     "job_id": "specify the job id to retrieve details of policy execution"},
+             security=['auth_user', 'auth_token'])
+    @policy_name_space.response(model=jobDetailsResponseModel, code=200, description='Success')
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id, job_id):
+        try:
+            headers = request.headers
+            args = request.args
+            format_params = {'project_id': tenant_id, "job_id": job_id}
+            response = invoke_api(script_api_definition, 'job_details', format_params, args=args, headers=headers)
+            value = json.loads(response.content.decode('utf-8'))
+            if response.status_code == 200:
+                return marshal(response.json(), jobDetailsResponseModel), 200
             else:
                 raise Exception(value.get("message"))
         except Exception as e:
