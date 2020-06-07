@@ -7,6 +7,8 @@ from flask import request, abort
 from flask_restplus import Resource, marshal
 
 from app import api
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, QA_ENDPOINT_URL_PROPERTY_NAME, \
+    QA_ENDPOINT_URL_DEFAULT_VALUE
 from definitions.inventory_definitions import InventoryURLDefinitions
 from models.inventory_models import inventory_filter_response, inventory_filter_data_model_list, \
     inventory_category_count_request, inventory_category_count_response, inventory_category_count_data_model_list, \
@@ -100,8 +102,9 @@ class InventoryResource(Resource):
             headers = request.headers
             args = request.args
             format_params = {'tenant_id': tenant_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, QA_ENDPOINT_URL_PROPERTY_NAME, QA_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(inventory_api_definition, 'get_filter_details', format_params, args=args,
-                                  headers=headers)
+                                  headers=headers, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), inventoryFiltersResponseModelList), 200
             else:

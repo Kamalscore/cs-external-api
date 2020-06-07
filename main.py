@@ -14,6 +14,7 @@ from resources.script_jobs import script_job_name_space
 from resources.scripts import script_name_space
 from resources.tenant_id_ns import tenant_id_name_space
 from resources.tenants import tenant_name_space
+from resources.favicon import Fav16, Fav32
 
 
 api.add_namespace(auth_name_space)

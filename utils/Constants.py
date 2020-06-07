@@ -6,3 +6,9 @@ LOG_FILE_PATH_PROPERTY_NAME = 'log.file.path'
 LOG_FILE_NAME_PROPERTY_DEFAULT_VALUE = '/tmp/api_wrapper.log'
 LOG_CONSOLE_LEVEL_PROPERTY_NAME = 'log.console.level'
 UTF_8 = 'utf-8'
+
+WEB_CONFIG_SECTION = 'WEBConfig'
+QA_ENDPOINT_URL_PROPERTY_NAME = 'qa.endpoint.url'
+QA_ENDPOINT_URL_DEFAULT_VALUE = 'http://52.229.12.111:18080'
+
+

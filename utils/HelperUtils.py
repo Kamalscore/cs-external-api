@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 import requests
 
 from client import _url
+from utils.Constants import QA_ENDPOINT_URL_DEFAULT_VALUE
 
 currentTimeInMillis = lambda: int(round(time.time() * 1000))
 
@@ -90,13 +91,13 @@ def getDecodedValue(encryptedValue):
     return base64.standard_b64decode(encryptedValue)
 
 
-def invoke_api(definition, action, format_params=None, req_body=None, args=None, headers=None):
+def invoke_api(definition, action, format_params=None, req_body=None, args=None, headers=None, base_url=QA_ENDPOINT_URL_DEFAULT_VALUE):
     url = definition.get(action, {}).get('path', '').format(**format_params)
     if not args:
         args = {}
     if definition.get(action, {}).get('query_params'):
         args.update(definition.get(action, {}).get('query_params'))
-    url = _url(url)
+    url = _url(url, base_url)
     if args:
         url = url + '?' + urlencode(args)
     return requests.request(definition.get(action, {}).get('method'), url, data=json.dumps(req_body),

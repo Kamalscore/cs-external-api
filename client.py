@@ -3,9 +3,11 @@
 
 import requests
 
+from utils.Constants import QA_ENDPOINT_URL_DEFAULT_VALUE
 
-def _url(path):
-    return "http://localhost:18080" + path
+
+def _url(path, base_url=QA_ENDPOINT_URL_DEFAULT_VALUE):
+    return base_url + path
 
 
 def get_token(access_key=str, secret_key=str):
