@@ -13,6 +13,8 @@ class CustomSwagger(Swagger):
     """
     def __init__(self, api):
         super(CustomSwagger, self).__init__(api)
+        for name in self.api.for_doc_alone_model_names:
+            super(CustomSwagger, self).register_model(self.api.models[name])
         self.api = api
 
     def expected_params(self, doc):

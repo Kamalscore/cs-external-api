@@ -2,7 +2,8 @@
 # 'LICENSE.txt', which is part of this source code package.
 import enum
 
-from flask_restplus import fields
+# from flask_restplus import fields
+from config import custom_fields as fields
 
 
 def auth_request():
@@ -202,7 +203,7 @@ def list_tenant(id_attribute='project_master_id'):
                                                          "creating."),
         'description': fields.String(required=True, description="Description of the tenant."),
         'account_id': fields.String(required=True, description="Id of the CoreStack account.",
-                                    attribute=id_attribute),
+                                    attribute=id_attribute, output_key='account_id'),
 
         'status': fields.String(required=True, description="Status of the tenant can be active or inactive. When "
                                                            "inactive no operations can be performed within that "
@@ -211,9 +212,9 @@ def list_tenant(id_attribute='project_master_id'):
     }
 
 
-def get_tenant_model():
+def get_tenant_model(metadataModel):
     return {
-        'metadata': fields.String(required=True, description="metadata is a freeform JSON. It allows to store "
+        'metadata': fields.Nested(metadataModel, required=True, description="metadata is a freeform JSON. It allows to store "
                                                              "custom keys and values. It will be useful for "
                                                              "storing information about an external applications "
                                                              "that will refer to CoreStack tenant"),

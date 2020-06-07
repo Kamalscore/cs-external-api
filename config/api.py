@@ -1,4 +1,4 @@
-from flask_restplus import Api
+from flask_restplus import Api, OrderedModel, Model
 from flask_restplus.utils import default_id
 from werkzeug.utils import cached_property
 
@@ -57,6 +57,7 @@ class CustomizedApi(Api):
                          contact_email, authorizations, security, doc, default_id, default, default_label, validate,
                          tags, prefix, ordered, default_mediatype, decorators, catch_all_404s, serve_challenge_on_401,
                          format_checker, **kwargs)
+        self.for_doc_alone_model_names = []
 
     @cached_property
     def __schema__(self):
@@ -75,3 +76,17 @@ class CustomizedApi(Api):
                 super(CustomizedApi, self).log.exception(msg)  # This will provide a full traceback
                 return {'error': msg}
         return self._schema
+
+    def model(self, name=None, model=None, mask=None, for_doc_alone=False, **kwargs):
+        """
+        Register a model
+
+        .. seealso:: :class:`Model`
+        """
+        cls = OrderedModel if self.ordered else Model
+        model = cls(name, model, mask=mask)
+        model.__apidoc__.update(kwargs)
+        if for_doc_alone:
+            self.for_doc_alone_model_names.append(name)
+        return self.add_model(name, model)
+
