@@ -15,16 +15,16 @@ tokenModel = api.model('Token', token(), discription="This contains the attribut
                                                      "access_token, expires_at & "
                                                      "issued_at. access_token will be "
                                                      "passed with X-Auth-Token header in "
-                                                     "all other APIs for authentication.")
+                                                     "all other APIs for authentication.", for_doc_alone=True)
 authTenantModel = api.model('TokenTenantModel', auth_tenant_model(), description="List of tenants within the "
                                                                                  "CoreStack account. Each tenant will "
                                                                                  "have an id & name that uniquely "
-                                                                                 "identifies it.")
+                                                                                 "identifies it.", for_doc_alone=True)
 requestModel = api.model('AuthRequest', auth_request())
-timezoneModel = api.model('TimezoneModel', user_timezone_model())
-userModel = api.model('User', auth_user_model(timezoneModel), description="Contains information about the user "
+timezoneModel = api.model('TimezoneModel', user_timezone_model(), for_doc_alone=True)
+userModel = api.model('UserModel', auth_user_model(timezoneModel), description="Contains information about the user "
                                                                           "associated with the Access Key / Secret "
-                                                                          "Key.")
+                                                                          "Key.", for_doc_alone=True)
 responseModel = api.model('AuthResponse', auth_response(tokenModel, authTenantModel, userModel))
 # responseDetailedModel = api.model('AuthDetailedResponse', auth_detailed_response(tokenModel, userModel, wildcardModel))
 #responseDetailedModel = api.inherit('AuthDetailedResponse', responseModel, auth_detailed_response(tokenModel, userModel, wildcardModel))
@@ -38,7 +38,7 @@ class AuthResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(AuthResource))
 
-    @api.doc(name="Auth Request", description="CoreStack requires Auth token to be passed in all the API headers. "
+    @api.doc(id='authToken', name="Auth Request", description="CoreStack requires Auth token to be passed in all the API headers. "
                                               "Auth token has to be generated and it is valid only for an hour. New "
                                               "token can be generated using this API.<br><br>Extract <b>Auth-token, "
                                               "Tenant "

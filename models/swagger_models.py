@@ -24,8 +24,14 @@ def auth_request():
 def auth_response(tokenModel, tokenTenantModel, userModel):
     return {
         # 'message': fields.String(required=True, description="Response message."),
-        'token': fields.Nested(tokenModel, required=True, description="Token.", attribute='data.token'),
-        'user': fields.Nested(userModel, required=True, description="Token.", attribute='data.user'),
+        'token': fields.Nested(tokenModel, required=True, description="This contains the atrributes access_token, "
+                                                                      "expires_at & issued_at. access_token will be "
+                                                                      "passed with X-Auth-Token header in all other "
+                                                                      "APIs for authentication.",
+                               attribute='data.token'),
+        'user': fields.Nested(userModel, required=True, description="Contains information about the user associated "
+                                                                    "with the Access Key / Secret Key.",
+                              attribute='data.user'),
         'account_id': fields.String(required=True, description="Id of the Account in CoreStack. There can be "
                                                                "multiple tenats within an account, so account_id "
                                                                "will be required for performing account level "
@@ -188,7 +194,7 @@ def tenant_data_model():
 def tenant_response(tenantDataModel):
     return {
         # 'message': fields.String(required=True, description="Response Message."),
-        'tenants': fields.Nested(tenantDataModel, required=True, description="Metadata Info.",
+        'tenants': fields.Nested(tenantDataModel, required=True, description="Tenants List.",
                                  attribute='data.projects')
     }
 
@@ -202,7 +208,8 @@ def list_tenant(id_attribute='project_master_id'):
         'name': fields.String(required=True, description="Unique name of the tenant provided as input while "
                                                          "creating."),
         'description': fields.String(required=True, description="Description of the tenant."),
-        'account_id': fields.String(required=True, description="Id of the CoreStack account.",
+        'account_id': fields.String(required=True, description="Id of the CoreStack account under which this tenant "
+                                                               "resides.",
                                     attribute=id_attribute, output_key='account_id'),
 
         'status': fields.String(required=True, description="Status of the tenant can be active or inactive. When "
@@ -230,7 +237,10 @@ def get_tenant_model(metadataModel):
 def tenant_create_response():
     return {
         # 'message': fields.String(required=True, description="Response Message."),
-        'tenant_id': fields.String(required=True, description="Tenant id.", attribute='data.id')
+        'tenant_id': fields.String(required=True, description="Id of the newly created tenant. This will be used for "
+                                                              "performing tenant level operations such as "
+                                                              "createPolicy, createScript, onboardCloudAccount and so "
+                                                              "on.", attribute='data.id')
     }
 
 
