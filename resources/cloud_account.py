@@ -8,11 +8,10 @@ from flask_restplus import marshal, Resource
 
 from app import api
 from definitions.service_account_definitions import ServiceAccountUrlDefinitions
-from models.service_account_models import aws_cloud_account_auth_values_model, aws_cloud_account_request_model, \
+from models.service_account_models import aws_cloud_account_auth_values_model, cloud_account_request_model, \
     cloud_account_create_response_model, cloud_account_dependency_response_model, cloud_account_delete_response_model, \
-    wild_card_model
-from models.service_account_models import cloud_account_response_model_list, cloud_account_data_model_list, \
-    cloud_account_response_model_view
+    wild_card_model, azure_cloud_account_auth_values_model, cloud_account_response_model_list, \
+    cloud_account_data_model_list, cloud_account_response_model_view, cloud_account_rediscover_response
 from models.swagger_models import error
 from utils.HelperUtils import getClassName
 from utils.HelperUtils import invoke_api
@@ -22,25 +21,26 @@ cloud_account_name_space = api.namespace(name='CloudAccounts', path="/",
 CloudAccountList = api.model('CloudAccountList', cloud_account_data_model_list())
 CloudAccountListResponse = api.model('CloudAccountListResponse',
                                      cloud_account_response_model_list(CloudAccountList))
-CloudAccountDescribeResponse = api.model('CloudAccountDescribeResponse', cloud_account_response_model_view())
+WildCardModel = api.model('WildCardModel', wild_card_model())
+CloudAccountDescribeResponse = api.model('CloudAccountDescribeResponse',
+                                         cloud_account_response_model_view(WildCardModel))
 errorModel = api.model('Error', error())
 
 AWSCloudAccountAuthValues = api.model('AWSCloudAccountAuthValues', aws_cloud_account_auth_values_model())
-AWSCloudAccountCreateRequest = api.model('AWSCloudAccountCreateRequest',
-                                         aws_cloud_account_request_model(AWSCloudAccountAuthValues))
-AWSCloudAccountUpdateRequest = api.model('AWSCloudAccountUpdateRequest',
-                                         aws_cloud_account_request_model(AWSCloudAccountAuthValues))
-# AzureCloudAccountAuthValuesModel = api.model('AzureCloudAccountAuthValuesModel',
-#                                              azure_cloud_account_auth_values_model())
-# AzureCloudAccountRequestModel = api.model('AzureCloudAccountRequestModel',
-#                                           azure_cloud_account_request_model(AzureCloudAccountAuthValuesModel))
+CloudAccountCreateRequest = api.model('CloudAccountCreateRequest',
+                                      cloud_account_request_model(AWSCloudAccountAuthValues), for_doc_alone=True)
+AWSCloudAccountUpdateRequest = api.model('CloudAccountUpdateRequest',
+                                         cloud_account_request_model(AWSCloudAccountAuthValues))
+AzureCloudAccountAuthValues = api.model('AzureCloudAccountAuthValues',
+                                        azure_cloud_account_auth_values_model(), for_doc_alone=True)
 CloudAccountCreateResponse = api.model('CloudAccountCreateResponse', cloud_account_create_response_model())
 CloudAccountUpdateResponse = api.model('CloudAccountUpdateResponse', cloud_account_create_response_model())
 CloudAccountDeleteResponse = api.model('CloudAccountDeleteResponse', cloud_account_delete_response_model())
-WildCardModel = api.model('WildCardModel', wild_card_model())
 CloudAccountDependencyResponse = api.inherit('CloudAccountDependencyResponse',
                                              CloudAccountDeleteResponse,
                                              cloud_account_dependency_response_model(WildCardModel))
+CloudAccountRediscoverResponse = api.model('CloudAccountRediscoverResponse',
+                                           cloud_account_rediscover_response())
 service_account_api_defn = ServiceAccountUrlDefinitions.URLInfo
 
 
@@ -54,12 +54,13 @@ class CloudAccountResource(Resource):
              description="Create a cloud account for a specific service for a given tenant. \
                          Service implies any Cloud platform that is integrated with CoreStack.The specified auth values\
                          should be passed based on the cloud service.Below\
-                         mentioned request model is to create AWS Cloud account.",
+                         mentioned auth_values in the request model is to create AWS Cloud account."
+                         "Refer <u>AzureCloudAccountAuthValues</u> to replace auth_values for Azure cloud account.",
              security=['auth_user', 'auth_token'],
              params={"service": {"description": "Available cloud services", "in": "query", "type": "str",
                                  "enum": ["AWS", "Azure"]}
                      })
-    @api.expect(AWSCloudAccountCreateRequest, validate=True)
+    @api.expect(CloudAccountCreateRequest, validate=False)
     @cloud_account_name_space.response(model=CloudAccountCreateResponse, code=200, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
     @cloud_account_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -121,8 +122,8 @@ class CloudAccountResource(Resource):
                 return marshal(response.json(), CloudAccountListResponse), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
-        except Exception:
-            cloud_account_name_space.abort(500, message=response.json().get("message", ""))
+        except Exception as e:
+            cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
 
 @cloud_account_name_space.route("/v1/<string:tenant_id>/cloud_accounts/<string:cloud_account_id>")
@@ -154,7 +155,10 @@ class CloudAccountResourceById(Resource):
             cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
-             description="Update cloud account with specified value for the service for a given tenant.",
+             description="Update cloud account with specified value for the service for a given tenant.The specified auth values\
+                         should be passed based on the cloud service.Below\
+                         mentioned auth_values in the request model is for AWS Cloud account."
+                         "Refer <u>AzureCloudAccountAuthValues</u> to replace auth_values for Azure.",
              security=['auth_user', 'auth_token'],
              params={"service": {"description": "Available cloud services", "in": "query", "type": "str",
                                  "enum": ["AWS", "Azure"]}
@@ -228,6 +232,35 @@ class CloudAccountResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(),
                                CloudAccountDependencyResponse if action == "list" else CloudAccountDeleteResponse), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
+        except Exception as e:
+            cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+
+@cloud_account_name_space.route("/v1/<string:tenant_id>/cloud_accounts/<string:cloud_account_id>/rediscover")
+class CloudAccountRediscover(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(CloudAccountRediscover))
+
+    @api.doc(id="Re-discoverResources", name="Re-discoverResources",
+             description="Initiate resource discovery of the cloud account.",
+             security=['auth_user', 'auth_token'])
+    @cloud_account_name_space.response(model=CloudAccountRediscoverResponse, code=200, description='Success')
+    @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @cloud_account_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @cloud_account_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id, cloud_account_id):
+        try:
+            format_params = {
+                'tenant_id': tenant_id
+            }
+            args = {"account_id": cloud_account_id}
+            response = invoke_api(service_account_api_defn, 'rediscover', headers=request.headers,
+                                  format_params=format_params, args=args)
+            if response.status_code == 200:
+                return marshal(response.json(), CloudAccountRediscoverResponse), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:

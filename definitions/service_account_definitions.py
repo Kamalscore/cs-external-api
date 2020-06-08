@@ -23,5 +23,10 @@ class ServiceAccountUrlDefinitions(object):
         delete=dict(
             path='/v1/{tenant_id}/serviceaccounts/{service_account_id}',
             method='delete'
+        ),
+        rediscover=dict(
+            path='/v1/{tenant_id}/serviceaccounts',
+            method='get',
+            query_params=dict(type='re-discover', action='sync')
         )
     )
