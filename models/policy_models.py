@@ -6,31 +6,40 @@ from flask_restplus import fields
 
 def policy_create_model():
     return {
-        "name": fields.String(required=True, description="policy name"),
+        "name": fields.String(required=True, description="policy name which is unique"),
         "description": fields.String(required=True, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),
         "content": fields.String(required=True, description="The policy content"),
-        "is_system_policy": fields.Boolean(),
+        "is_system_policy": fields.Boolean(required=False, description="Flag to identify system policies"),
         "engine_type": fields.String(required=True,
                                      description="Engine type of policy, mandatory if content type is git.", default="",
                                      enum=["azure_policy", "aws_config", "chef_inspec", "congress", ]),
-        "services": fields.List(fields.String, required=True, description="Displays the service associated with the\
-        policy, for example, AWS, AzureRM, Openstack., etc,"),
+        "cloud": fields.List(fields.String, required=True, description="Displays the cloud associated with the\
+        policy, for example, AWS, Azure etc"),
         "classification": fields.String(required=True, description="Policies are classified based on the basis of the\
         activity they perform, for example provisioning, Account Management, 	Utilization, etc. This value is\
         displayed in this field"),
         "sub_classification": fields.String(required=True, description="Sub classification for policy"),
         "scope": fields.String(required=True,
-                               description="The scope of the policy (accout, tenant or private)",
+                               description="The scope of the policy (accout, tenant or private)", default="",
                                enum=["account", "tenant", "private"]),
+        "recommendations": fields.List(fields.String, required=False, description="Name of the recommendations "
+                                                                                  "separated by comma on policy "
+                                                                                  "violation if required can be "
+                                                                                  "obtained from list recommendations "
+                                                                                  "call"),
         "content_type": fields.String(required=True, description="Policy content source (git, file)", default="",
                                       enum=["git", "file"]),
         "content_password_or_key": fields.String(
-            required=False, description="Password or private key to access of Git repo if repo is authenticated"),
-        "content_username": fields.String(required=False, description="Username of Git repo if repo is authenticated"),
-        "content_url": fields.String(required=False, description="Git project URL when the content type is git"),
-        "content_path": fields.String(required=False, description="Root path of the policy in git repo"),
+            required=False, description="Password or private key to access of Git repo if repo is authenticated "
+                                        "required only in case of content type git"),
+        "content_username": fields.String(required=False, description="Username of Git repo if repo is authenticated "
+                                                                      "required only in case of content type git"),
+        "content_url": fields.String(required=False, description="Git project URL when the content type is git "
+                                                                 "required only in case of content type git"),
+        "content_path": fields.String(required=False, description="Root path of the policy in git repo required only "
+                                                                  "in case of content type git"),
         "severity": fields.String(required=True
                                   , description="Severity of policy", default="", enum=["low", "medium", "high"])
     }
@@ -38,18 +47,18 @@ def policy_create_model():
 
 def policy_update_model(policy_meta_data):
     return {
-        "name": fields.String(required=True, description="policy name"),
+        "name": fields.String(required=True, description="policy name is a unique field"),
         "description": fields.String(required=False, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),
         "content": fields.String(required=True, description="The policy content"),
-        "is_system_policy": fields.Boolean(),
+        "is_system_policy": fields.Boolean(required=False, description="Flag to identify system policies"),
         "metadata": fields.Nested(policy_meta_data, required=False, description="Metadata about policy"),
         "engine_type": fields.String(required=False,
                                      description="Engine type of policy, mandatory if content type is git.", default="",
                                      enum=["azure_policy", "aws_config", "congress", "chef_inspec"]),
-        "services": fields.List(fields.String, required=True, description="Displays the service associated with the\
-           policy, for example, AWS, AzureRM, Openstack., etc,"),
+        "cloud": fields.List(fields.String, required=True, description="Displays the cloud associated with the policy,"
+                                                                       " for example, AWS, Azure etc"),
         "classification": fields.String(required=True, description="Policies are classified based on the basis of the\
            activity they perform, for example provisioning, Account Management, 	Utilization, etc. This value is\
            displayed in this field"),
@@ -60,10 +69,14 @@ def policy_update_model(policy_meta_data):
         "content_type": fields.String(required=False, description="Policy content source (git, file)", default="",
                                       enum=["git", "file"]),
         "content_password_or_key": fields.String(
-            required=False, description="Password or private key to access of Git repo if repo is authenticated"),
-        "content_username": fields.String(required=False, description="Username of Git repo if repo is authenticated"),
-        "content_url": fields.String(required=False, description="Git project URL when the content type is git"),
-        "content_path": fields.String(required=False, description="Root path of the policy in git repo"),
+            required=False, description="Password or private key to access of Git repo if repo is authenticated "
+                                        "required if the content type is git"),
+        "content_username": fields.String(required=False, description="Username of Git repo if repo is authenticated "
+                                                                      "required if the content type is git"),
+        "content_url": fields.String(required=False, description="Git project URL when the content type is git "
+                                                                 "required if the content type is git"),
+        "content_path": fields.String(required=False, description="Root path of the policy in git repo required if "
+                                                                  "the content type is git"),
         "severity": fields.String(required=False
                                   , description="Severity of policy", default="", enum=["low", "medium", "high"])
     }
@@ -144,8 +157,8 @@ def policy_job_response():
                                 attribute='data.engine'),
         "arguments": fields.String(required=True, description="arguments provided for job execution",
                                    attribute='data.args'),
-        "service_accounts": fields.String(required=True, description="Service account used for job execution",
-                                          attribute='data.service_accounts'),
+        "cloud_accounts": fields.String(required=True, description="Cloud account used for job execution",
+                                        attribute='data.service_accounts'),
         "execution_type": fields.String(required=True, description="Policy execution type can be on demand or scheduled"
                                         , attribute='data.execution_type'),
         "created_by": fields.String(required=True, description="Policy Job created by", attribute='data.created_by'),
@@ -164,20 +177,21 @@ def policy_job_response():
 
 def policy_execute_model(arguments, service_account):
     return {
-        "args": fields.Nested(arguments, required=True, default={}, description="arguments to execute policy"),
-        "service_accounts": fields.List(fields.Nested(service_account),
-                                        required=True, description="service account details to execute the policy")
+        "args": fields.Nested(arguments, required=True, default={},
+                              description="arguments to execute policy for example values can be in the below format "
+                                          "{'listOfAllowedSKUs':['Basic_A0']} or {'requiredRetentionDays':'365',"
+                                          "'effect':'AuditIfNotExists'} etc"),
+        "cloud_accounts": fields.List(fields.Nested(service_account), required=True,
+                                      description="cloud account details to execute the policy")
     }
 
 
 def service_account_details():
     return {
-        'service_type': fields.String(required=True, description="Type of the service (Eg. Cloud, Monitoring, "
-                                                                 "Virtualization etc.). "),
-        'service_name': fields.String(required=True, description="The service name of the associated service "
-                                                                 "account, for example, AWS,Azure etc"),
-        "id": fields.String(required=True, description="Identifier of the cloud account on which the "
-                                                       "policy will be executed")
+        'cloud_name': fields.String(required=True, description="The cloud name of the account for which the policy"
+                                                               "will be executed ex: Azure, AWS etc"),
+        "cloud_id": fields.String(required=True, description="Identifier of the cloud account on boarded in the "
+                                                             "on boarding section")
     }
 
 

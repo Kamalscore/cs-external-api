@@ -42,8 +42,9 @@ class PolicyResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyResource))
 
-    @api.doc(name="CreatePolicy Request", description='Creates a new Policy.',
-             params={"tenant_id": "Specify the tenant Id for the policy"},
+    @api.doc(id="CreatePolicy", name="CreatePolicy Request", description='Policy Create',
+             params={"tenant_id": "Specify the tenant Id to create policy which is a unique id "
+                                  "retrieved after creating a tenant in the tenant section"},
              security=['auth_user', 'auth_token'])
     @api.expect(createPolicyReqModel, validate=True)
     @policy_name_space.response(model=create_policy_data_model, code=201, description='Success')
@@ -52,11 +53,14 @@ class PolicyResource(Resource):
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self, tenant_id):
         try:
+            t = request.json
+            services = t.pop("cloud")
+            t["services"] = services
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id}
             response = invoke_api(script_api_definition, 'create', format_params, args=args, headers=headers,
-                                  req_body=request.json)
+                                  req_body=t)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
@@ -66,8 +70,9 @@ class PolicyResource(Resource):
             policy_name_space.abort(response.status_code, message=value.get("message"),
                                     status=value.get("status"), statusCode=response.status_code)
 
-    @api.doc(name="ListPolicy Request", description='List all the Policies',
-             params={"tenant_id": "Specify the tenant Id for the policy"},
+    @api.doc(id="ListPolicy", name="ListPolicy Request", description='List Policies',
+             params={"tenant_id": "Specify the tenant Id to list policies which is a unique id retrieved after "
+                                  "creating a tenant in the tenant section"},
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyResponseModelList, code=200, description='Success', as_list=True)
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -97,9 +102,11 @@ class PolicyResourceById(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyResourceById))
 
-    @api.doc(name="View Policy Request", description='view the created policy with policy id and tenant id',
-             params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to retrieve"},
+    @api.doc(id="ViewPolicy", name="View Policy Request", description="View Policy",
+             params={"tenant_id": "Specify the tenant Id to get policy which is a unique id retrieved after creating"
+                                  " a tenant in the tenant section",
+                     "policy_id": "specify the policy id to retrieve which is a unique id can be retrieved using list "
+                                  "policy call"},
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyViewResponse, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -120,9 +127,11 @@ class PolicyResourceById(Resource):
             policy_name_space.abort(response.status_code, message=value.get("message"),
                                     status=value.get("status"), statusCode=response.status_code)
 
-    @api.doc(name="Update Policy Request", description='update policy with policy id and tenant id',
-             params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to update"},
+    @api.doc(id="UpdatePolicy", name="Update Policy Request", description='Update Policy',
+             params={"tenant_id": "Specify the tenant Id to update policy which is a unique id retrieved after creating"
+                                  " a tenant in the tenant section",
+                     "policy_id": "specify the policy id to update which is a unique id can be retrieved using list "
+                                  "policy call"},
              security=['auth_user', 'auth_token'])
     @api.expect(updatePolicyReqModel, validate=True)
     @policy_name_space.response(model=policyUpdateResponse, code=200, description='Success')
@@ -131,11 +140,14 @@ class PolicyResourceById(Resource):
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def put(self, tenant_id, policy_id):
         try:
+            t = request.json
+            services = t.pop("cloud")
+            t["services"] = services
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "policy_id": policy_id}
             response = invoke_api(script_api_definition, 'update', format_params, args=args, headers=headers,
-                                  req_body=request.json)
+                                  req_body=t)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), policyUpdateResponse), 200
@@ -145,9 +157,11 @@ class PolicyResourceById(Resource):
             policy_name_space.abort(response.status_code, message=value.get("message"),
                                     status=value.get("status"), statusCode=response.status_code)
 
-    @api.doc(name="Delete Policy Request", description='delete policy with policy id and tenant id',
-             params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to delete"},
+    @api.doc(id="DeletePolicy", name="Delete Policy Request", description='Delete Policy',
+             params={"tenant_id": "Specify the tenant Id to delete policy which is a unique id retrieved after creating"
+                                  " a tenant in the tenant section",
+                     "policy_id": "specify the policy id of the policy to delete, policy id is unique can be obtained "
+                                  "from the list policy call"},
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyRemovalResModel, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -176,9 +190,11 @@ class PolicyActionsByName(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyActionsByName))
 
-    @api.doc(name="Execute Policy Request", description='Execute a Policy',
-             params={"tenant_id": "Specify the tenant Id for the policy",
-                     "policy_id": "specify the policy id to retrieve"}, security=['auth_user', 'auth_token'])
+    @api.doc(id="ExecutePolicy", name="Execute Policy Request", description='Execute Policy',
+             params={"tenant_id": "Specify the tenant Id of the policy to be executed, this can be obtained after"
+                                  " creating a tenant in the tenant section",
+                     "policy_id": "specify the policy id to execute, policy id can be obtained from the list policy "
+                                  "call"}, security=['auth_user', 'auth_token'])
     @api.expect(executePolicyReqModel, validate=True)
     @policy_name_space.response(model=executePolicyResponseModel, code=201, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -186,11 +202,21 @@ class PolicyActionsByName(Resource):
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self, tenant_id, policy_id):
         try:
+            t = request.json
+            cloud_accounts = t.pop("cloud_accounts")
+            cloud_account_list = list()
+            cloud_account = dict()
+            for cloud in cloud_accounts:
+                cloud_account["service_type"] = "Cloud"
+                cloud_account["service_name"] = cloud["cloud_name"]
+                cloud_account["id"] = cloud["cloud_id"]
+                cloud_account_list.append(cloud_account)
+            t["service_accounts"] = cloud_account_list
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, 'policy_id': policy_id}
             response = invoke_api(script_api_definition, 'execute', format_params, args=args, headers=headers,
-                                  req_body=request.json)
+                                  req_body=t)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
@@ -208,9 +234,11 @@ class PolicyJobs(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyJobs))
 
-    @api.doc(name="Policy Job details request", description='Retrieve policy job details using the job id',
+    @api.doc(id="JobDetails", name="Policy Job details request",
+             description='Retrieve policy job details using the job id',
              params={"tenant_id": "Specify the tenant Id for the policy",
-                     "job_id": "specify the job id to retrieve details of policy execution"},
+                     "job_id": "specify the job id to retrieve details of policy execution, job id is unique can be "
+                               "obtained from the execute policy response"},
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=jobDetailsResponseModel, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
