@@ -47,7 +47,7 @@ class InventoryCategoryDetails(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
-    @api.doc(name="Get inventory category count",
+    @api.doc(id="GetInventoryCount", name="Get inventory category count",
              description='Get inventory category/resource count based on the cloud',
              params={'service_name': {'description': '', 'in': 'query', 'type': 'str', 'enum': ['AWS', 'Azure'],
                                       'default': 'AWS'},
@@ -85,10 +85,10 @@ class InventoryResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
-    @api.doc(name="Get Inventory Filters",
+    @api.doc(id="GetInventoryFilters", name="Get Inventory Filters",
              description='Get all the available filters for the corresponding cloud.',
-             params={'service_name': {'description': '', 'in': 'query', 'type': 'str', 'enum': ['AWS', 'Azure'],
-                                      'default': 'AWS'},
+             params={'service_name': {'description': 'Name of the service cloud', 'in': 'query',
+                                      'type': 'str', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the policy"},
              security=['auth_user', 'auth_token'])
     @inventory_name_space.response(model=inventoryFiltersResponseModelList, code=200, description='Success')
@@ -119,7 +119,7 @@ class InventoryResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
-    @api.doc(name="Get Inventory Filters",
+    @api.doc(id="GetInventoryDetails", name="Get Inventory Filters",
              description='Get resource details based on the cloud accounts, category, component, resource.',
              params={"tenant_id": "Specify the tenant Id for the policy"},
              security=['auth_user', 'auth_token'])
