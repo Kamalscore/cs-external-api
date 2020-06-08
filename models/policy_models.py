@@ -6,7 +6,10 @@ from flask_restplus import fields
 
 def policy_create_model():
     return {
-        "name": fields.String(required=True, description="policy name which is unique"),
+        "name": fields.String(required=True, description="policy name which is unique and does not allow special "
+                                                         "character or space"),
+        "display_name": fields.String(required=True, description="Display name of policy which allow space this is to "
+                                                                 "mostly show on the ui"),
         "description": fields.String(required=True, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),
@@ -22,13 +25,14 @@ def policy_create_model():
         displayed in this field"),
         "sub_classification": fields.String(required=True, description="Sub classification for policy"),
         "scope": fields.String(required=True,
-                               description="The scope of the policy (accout, tenant or private)", default="",
+                               description="The scope of the policy Account scope - All users under that account will "
+                                           "have access to view and execute Only Account admins can update/delete the "
+                                           "policies, Tenant Scope - Users with access to the specific tenant will have"
+                                           "access to policies who can describe or execute policies. Tenant admins "
+                                           "can  only update/delete. Private Scope - User who created will only have "
+                                           "access",
+                               default="",
                                enum=["account", "tenant", "private"]),
-        "recommendations": fields.List(fields.String, required=False, description="Name of the recommendations "
-                                                                                  "separated by comma on policy "
-                                                                                  "violation if required can be "
-                                                                                  "obtained from list recommendations "
-                                                                                  "call"),
         "content_type": fields.String(required=True, description="Policy content source (git, file)", default="",
                                       enum=["git", "file"]),
         "content_password_or_key": fields.String(
@@ -47,7 +51,10 @@ def policy_create_model():
 
 def policy_update_model(policy_meta_data):
     return {
-        "name": fields.String(required=True, description="policy name is a unique field"),
+        "name": fields.String(required=True, description="policy name which is unique and does not allow space or "
+                                                         "special character"),
+        "display_name": fields.String(required=True, description="Display name of policy which allow space this is to "
+                                                                 "mostly show on the ui"),
         "description": fields.String(required=False, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),
@@ -64,7 +71,13 @@ def policy_update_model(policy_meta_data):
            displayed in this field"),
         "sub_classification": fields.String(required=True, description="Sub classification for policy"),
         "scope": fields.String(required=True,
-                               description="The scope of the policy (global, accout, tenant or private)",
+                               description="The scope of the policy Account scope - All users under that account will "
+                                           "have access to view and execute Only Account admins can update/delete the "
+                                           "policies, Tenant Scope - Users with access to the specific tenant will have"
+                                           "access to policies who can describe or execute policies. Tenant admins "
+                                           "can  only update/delete. Private Scope - User who created will only have "
+                                           "access",
+                               default="",
                                enum=["account", "tenant", "private"]),
         "content_type": fields.String(required=False, description="Policy content source (git, file)", default="",
                                       enum=["git", "file"]),
@@ -86,7 +99,8 @@ def policy_view_response():
     return {
         "policy_id": fields.String(required=True, description="The unique identifier created for each policy.",
                                    attribute="data.policies.id"),
-        "policy_name": fields.String(required=True, description="The name of the policy.",
+        "policy_name": fields.String(required=True, description="The name of the policy without space or special "
+                                                                "character ",
                                      attribute="data.policies.name"),
         "description": fields.String(required=True, description="A brief explanation of the policy.",
                                      attribute="data.policies.description"),
@@ -100,8 +114,16 @@ def policy_view_response():
                                                                           "policy for example, AWS, AzureRM, "
                                                                           "Openstack., etc",
                                 attribute="data.policies.services"),
-        "scope": fields.String(required=True, description="The scope of the policy.",
-                               attribute="data.policies.scope", enum=["global", "account", "tenant", "private"]),
+        "scope": fields.String(required=True,
+                               description="The scope of the policy Account scope - All users under that account will "
+                                           "have access to view and execute Only Account admins can update/delete the "
+                                           "policies, Tenant Scope - Users with access to the specific tenant will have"
+                                           "access to policies who can describe or execute policies. Tenant admins "
+                                           "can  only update/delete. Private Scope - User who created will only have "
+                                           "access",
+                               default="",
+                               attribute="data.policies.scope",
+                               enum=["account", "tenant", "private"]),
         "content_type": fields.String(required=True, description="Content type of policy (Git or File)",
                                       attribute="data.policies.content_type"),
         "content": fields.String(required=True, description="The policy content.", attribute="data.policies.content"),
@@ -127,8 +149,9 @@ def policy_view_response():
 
 def policy_data_model_list():
     return {
-        'policy_id': fields.String(required=True, description="Policy Id", attribute='id'),
-        'name': fields.String(required=True, description="Policy Name"),
+        'policy_id': fields.String(required=True, description="Policy Id is unique identifier of a policy",
+                                   attribute='id'),
+        'name': fields.String(required=True, description="Policy Name is unique can allow only"),
         'display_name': fields.String(required=True, description="Display name of policy"),
         'uri': fields.String(required=True, description="Unique URI for policy"),
         'description': fields.String(required=True, description="A brief explanation of the policy."),
@@ -137,7 +160,13 @@ def policy_data_model_list():
         policy, for example, AWS, AzureRM, Openstack., etc"),
         'engine_type': fields.String(required=True, description="Engine type of policy where it will execute"),
         'content_type': fields.String(required=True, description="Content type of policy (Git or File)"),
-        'scope': fields.String(required=True, description="Scope of the policy"),
+        "scope": fields.String(required=True,
+                               description="The scope of the policy Account scope - All users under that account will "
+                                           "have access to view and execute Only Account admins can update/delete the "
+                                           "policies, Tenant Scope - Users with access to the specific tenant will have"
+                                           "access to policies who can describe or execute policies. Tenant admins "
+                                           "can  only update/delete. Private Scope - User who created will only have "
+                                           "access"),
         "severity": fields.String(required=True, description="Severity of policy such as low, medium and high"),
         "has_recommendations": fields.Boolean(required=False,
                                               description="is recommendations configured on failure of policy"),
@@ -188,10 +217,10 @@ def policy_execute_model(arguments, service_account):
 
 def service_account_details():
     return {
-        'cloud_name': fields.String(required=True, description="The cloud name of the account for which the policy"
-                                                               "will be executed ex: Azure, AWS etc"),
-        "cloud_id": fields.String(required=True, description="Identifier of the cloud account on boarded in the "
-                                                             "on boarding section")
+        'cloud': fields.String(required=True, description="The cloud name of the account for which the policy"
+                                                          "will be executed ex: Azure, AWS etc"),
+        "cloud_account_id": fields.String(required=True, description="Identifier of the cloud account on boarded in "
+                                                                     "the on boarding section")
     }
 
 
@@ -213,13 +242,13 @@ def policy_response_list(policy_data_model):
 
 def create_policy_data_model():
     return {
-        'policy_id': fields.String(required=True, description="policy Id.", attribute="data")
+        'policy_id': fields.String(required=True, description="unique policy Id returned", attribute="data")
     }
 
 
 def policy_delete_response():
     return {
-        'message': fields.String(required=True, description="Response message.")
+        'message': fields.String(required=True, description="Delete Response message.")
     }
 
 
@@ -231,6 +260,6 @@ def policy_metadata_model():
 
 def policy_update_response():
     return {
-        'updated': fields.String(required=True, description="Response Message.",
-                                 attribute="data")
+        'message': fields.String(required=True, description="Response Message on update",
+                                 attribute="message")
     }

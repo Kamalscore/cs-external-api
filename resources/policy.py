@@ -86,7 +86,13 @@ class PolicyResource(Resource):
                          'access to policies who can describe or execute policies. Tenant admins can  only '
                          'update/delete. Private Scope - User who created will only have access',
              params={"tenant_id": "Specify the tenant Id to list policies which is a unique id can be obtained using "
-                                  " the list tenant api"},
+                                  " the list tenant api",
+                     "engine_type": {'description': 'Engine types filter', 'in': 'query', 'type': 'str',
+                                     'enum': ["azure_policy", "aws_config", "chef_inspec", "congress", ]},
+                     'limit': {'description': 'Number of records to display', 'type': 'integer',
+                               'enum': [10, 25, 50, 100]},
+                     'page': {'description': 'Page number', 'type': 'integer'}
+                     },
              security=['auth_user', 'auth_token'])
     @policy_name_space.response(model=PolicyResponseModelList, code=200, description='Success', as_list=True)
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -210,7 +216,7 @@ class PolicyActionsByName(Resource):
     @api.doc(id="ExecutePolicy", name="Execute Policy Request",
              description='Execute policy will return a unique job id the status of the policy can be checked using the '
                          'Job details api where you can pass the unique id generated to get the details or errors if '
-                         'any on execution',                                                               '',
+                         'any on execution',
              params={"tenant_id": "Specify the tenant Id of the policy to be executed, this can be obtained using the "
                                   "list tenant api",
                      "policy_id": "specify the policy id to execute, policy id can be obtained from the list policy "
@@ -228,8 +234,8 @@ class PolicyActionsByName(Resource):
             cloud_account = dict()
             for cloud in cloud_accounts:
                 cloud_account["service_type"] = "Cloud"
-                cloud_account["service_name"] = cloud["cloud_name"]
-                cloud_account["id"] = cloud["cloud_id"]
+                cloud_account["service_name"] = cloud["cloud"]
+                cloud_account["id"] = cloud["cloud_account_id"]
                 cloud_account_list.append(cloud_account)
             t["service_accounts"] = cloud_account_list
             headers = request.headers
