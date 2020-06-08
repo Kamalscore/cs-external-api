@@ -49,7 +49,7 @@ class InventoryCategoryDetails(Resource):
 
     @api.doc(id="GetInventoryCount", name="Get inventory category count",
              description='Get inventory category/resource count based on the cloud',
-             params={'service_name': {'description': '', 'in': 'query', 'type': 'str', 'enum': ['AWS', 'Azure'],
+             params={'service_name': {'description': '', 'in': 'query', 'type': 'string', 'enum': ['AWS', 'Azure'],
                                       'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
@@ -88,7 +88,7 @@ class InventoryResource(Resource):
     @api.doc(id="GetInventoryFilters", name="Get Inventory Filters",
              description='Get all the available filters for the corresponding cloud.',
              params={'service_name': {'description': 'Name of the service cloud', 'in': 'query',
-                                      'type': 'str', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
+                                      'type': 'string', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @inventory_name_space.response(model=inventoryFiltersResponseModelList, code=200, description='Success')
