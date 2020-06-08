@@ -68,15 +68,12 @@ class PolicyResource(Resource):
             format_params = {'project_id': tenant_id}
             response = invoke_api(policy_api_definition, 'create', format_params, args=args, headers=headers,
                                   req_body=t)
-            value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="ListPolicies", name="ListPolicies Request",
              description='List all the policies. Global Policies Scope- All '
@@ -105,15 +102,12 @@ class PolicyResource(Resource):
             args = request.args
             format_params = {'project_id': tenant_id}
             response = invoke_api(policy_api_definition, 'list', format_params, args=args, headers=headers)
-            value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), PolicyResponseModelList)
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
 
 @policy_name_space.route("/v1/<string:tenant_id>/policies/<string:policy_id>")
@@ -140,15 +134,12 @@ class PolicyResourceById(Resource):
             args = request.args
             format_params = {'project_id': tenant_id, "policy_id": policy_id}
             response = invoke_api(policy_api_definition, 'view', format_params, args=args, headers=headers)
-            value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), PolicyViewResponse), 200
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="UpdatePolicy", name="Update Policy Request",
              description='Update Policy details if required after creation using the api, the update by a user '
@@ -178,11 +169,9 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), policyUpdateResponse), 200
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="DeletePolicy", name="Delete Policy Request", description='Delete a policy which is no more required',
              params={"tenant_id": "Specify the tenant Id to delete policy which is a unique id can be retrieved from "
@@ -204,11 +193,9 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyRemovalResModel), 200
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
 
 @policy_name_space.route("/v1/<string:tenant_id>/policies/<string:policy_id>/execute")
@@ -252,11 +239,9 @@ class PolicyActionsByName(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
 
 @policy_name_space.route("/v1/<string:tenant_id>/policy_jobs/<string:job_id>")
@@ -288,8 +273,6 @@ class PolicyJobs(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), jobDetailsResponseModel), 200
             else:
-                message = value.get("message").replace("project", "tenant")
-                raise Exception(message)
+                return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=e,
-                                    status=value.get("status"), statusCode=response.status_code)
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
