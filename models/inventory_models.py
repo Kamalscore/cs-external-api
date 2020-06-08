@@ -55,9 +55,10 @@ def inventory_category_count_response():
 def inventory_resource_request_filter_data_model():
     return {
         'cloud_account': fields.List(fields.String, required=False, description="Id of the cloud account"),
-        'category': fields.String(required=False, description="Name for the category"),
-        'component': fields.String(required=False, description="Name for the component"),
-        'resource': fields.String(required=False, description="Name for the resource"),
+        'category': fields.String(required=False, description="Name of the category"),
+        'component': fields.String(required=False, description="Name of the component"),
+        'resource': fields.String(required=False, description="Name of the resource"),
+        'region': fields.List(fields.String, required=False, description="List of regions for the resource filter data")
     }
 
 
