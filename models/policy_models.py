@@ -8,8 +8,8 @@ def policy_create_model():
     return {
         "name": fields.String(required=True, description="policy name which is unique and does not allow special "
                                                          "character or space"),
-        "display_name": fields.String(required=True, description="Display name of policy which allow space this is to "
-                                                                 "mostly show on the ui"),
+        "display_name": fields.String(required=False, description="Display name of policy which allow space this is to "
+                                                                  "mostly show on the ui"),
         "description": fields.String(required=True, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),
@@ -53,8 +53,8 @@ def policy_update_model(policy_meta_data):
     return {
         "name": fields.String(required=True, description="policy name which is unique and does not allow space or "
                                                          "special character"),
-        "display_name": fields.String(required=True, description="Display name of policy which allow space this is to "
-                                                                 "mostly show on the ui"),
+        "display_name": fields.String(required=False, description="Display name of policy which allow space this is to "
+                                                                  "mostly show on the ui"),
         "description": fields.String(required=False, description="A brief explanation of the policy."),
         "type": fields.List(fields.String, required=False, description="Indicates the type of policy"),
         "category": fields.String(required=True, description="The category will be either service or resource"),

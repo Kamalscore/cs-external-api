@@ -72,9 +72,10 @@ class PolicyResource(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
     @api.doc(id="ListPolicies", name="ListPolicies Request",
@@ -108,9 +109,10 @@ class PolicyResource(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyResponseModelList)
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
 
@@ -142,9 +144,10 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyViewResponse), 200
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
     @api.doc(id="UpdatePolicy", name="Update Policy Request",
@@ -175,9 +178,10 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), policyUpdateResponse), 200
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
     @api.doc(id="DeletePolicy", name="Delete Policy Request", description='Delete a policy which is no more required',
@@ -200,9 +204,10 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyRemovalResModel), 200
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
 
@@ -247,9 +252,10 @@ class PolicyActionsByName(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
 
 
@@ -282,7 +288,8 @@ class PolicyJobs(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), jobDetailsResponseModel), 200
             else:
-                raise Exception(value.get("message"))
+                message = value.get("message").replace("project", "tenant")
+                raise Exception(message)
         except Exception as e:
-            policy_name_space.abort(response.status_code, message=value.get("message"),
+            policy_name_space.abort(response.status_code, message=e,
                                     status=value.get("status"), statusCode=response.status_code)
