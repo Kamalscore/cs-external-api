@@ -11,11 +11,10 @@ def script_job_script_info_data_model(wild_card_model):
         'script_id': fields.String(required=True, description="Script Id", attribute='id'),
         'script_name': fields.String(required=True, description="Script Name", attribute='name'),
         "config_type": fields.String(required=True, description='Config type of the script(s)'),
-
+        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script.",
+                                    skip_none=True),
         "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
                                                       "or custom json", default="script", enum=["script", "json"]),
-        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script.",
-                                    skip_none=True,),
         "output_parameters": fields.Nested(wild_card_model, required=True, skip_none=True,
                                            description="Output parameters of the script (all applied parameters)."),
         'status': fields.String(required=True, description="Status of the script execution"),

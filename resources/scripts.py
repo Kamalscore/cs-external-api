@@ -58,7 +58,13 @@ class Scripts(Resource):
              params={
                  'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
                  'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
-                           'enum': ['chef', 'ansible', 'puppet', 'shell']}
+                           'enum': ['chef', 'ansible', 'puppet', 'shell']},
+                 'category': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
+                              'enum': ["Application", "Languages", "Database", "Security", "System", "Web Server",
+                                       "Others"]},
+                 'limit': {'description': 'Number of records to display', 'type': 'integer',
+                           'enum': [10, 25, 50, 100]},
+                 'page': {'description': 'Page number', 'type': 'integer'}
              })
     @script_name_space.response(model=scriptResponseModelList, code=200, description='Success')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -190,8 +196,12 @@ class ScriptByID(Resource):
                                                                          'so be cautious when performing this operation.'
                                                                          ' Use updateScript to make the script as '
                                                                          'inactive if required',
-             security=['auth_user', 'auth_token'])
-    @script_name_space.response(model=createUpdateResponseModel, code=200, description='Deleted')
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+             })
+    @script_name_space.response(model=scriptRemovalResModel, code=200, description='Deleted')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -205,7 +215,7 @@ class ScriptByID(Resource):
             headers = request.headers
             response = invoke_api(script_api_definition, 'delete', format_params, args=args, headers=headers)
             if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+                return marshal(response.json(), scriptRemovalResModel, ordered=True), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
@@ -278,7 +288,7 @@ class ExecuteScript(Resource):
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, executeScriptReqModel, ordered=True, skip_none=True)
-            req_body['job_details'] = req_body.pop('execution_details', None)
+            req_body['job_details'] = req_body.pop('host_details', None)
             format_params = {
                 'tenant_id': tenant_id
             }

@@ -13,7 +13,9 @@ def script_data_model_list():
         'uri': fields.String(required=True, description="Unique URI for script"),
         'description': fields.String(required=True, description="Description about script"),
         'status': fields.String(required=True, description="Status of the script"),
-        'category': fields.List(fields.String, required=True, description="Script Category"),
+        'category': fields.List(fields.String, required=True, description="Category of the script",
+                                enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
+                                      "Others"]),
         'platform': fields.List(fields.String, required=True, description="Platforms supported by script."),
         'operating_system': fields.List(fields.String, required=True, description="OS supported by script"),
         'type': fields.String(required=True, description="Config type of the script", attribute='config_type'),
@@ -36,7 +38,7 @@ def script_data_model_view(wild_card_model):
                              "Others"]), required=True, description="Category the script belongs to the script",
             attribute='data.category'),
         'platform': fields.List(fields.Raw, required=True, description="Platforms supported by script.",
-                                attribute='data.platform'),
+                                attribute='data.platform', enum=["linux", "windows"]),
         'operating_system': fields.List(fields.Raw, required=True, description="OS supported by script",
                                         attribute='data.operating_systems'),
         'type': fields.String(required=True, description="Config type of the script (chef/ansible/shell/puppet)",
@@ -79,15 +81,23 @@ def script_response_list(script_data_model):
                                  required=True, description="Scripts List.",
                                  attribute='data.scripts',
                                  skip_none=True),
+        'total_scripts': fields.String(required=True, description="Total number of scripts available",
+                                       attribute='total_count')
     }
 
 
 def script_info_model():
     return {
-        'path_type': fields.String(required=True, description="Path type "
-                                                              "git/url/repository(puppet_alone)/galaxy(ansible)."),
         'name': fields.String(required=True, description="Script Name as available in the path"),
-        'path': fields.String(required=True, description="Path of the script")
+        'path_type': fields.String(required=True,
+                                   description="Path type"
+                                               "Corestack currently supports "
+                                               "git/url/repository(puppet_alone)/galaxy(ansible)."),
+        'path': fields.String(required=True,
+                              description="Path of the script. Examples"
+                                          "For git path_type: https://github.com/ansible/test-playbooks.git,"
+                                          "For url path_type: https://s3.amazonaws.com/ansible/test-playbooks.tar,"
+                                          "For galaxy: https://galaxy.ansible.com/community/zabbix.")
     }
 
 
@@ -155,31 +165,39 @@ def script_create_update_response_model():
 def script_execute_request(job_input_data_model):
     return {
         'job_name': fields.String(required=True, description="Name of the script job"),
-        'execution_details': fields.List(fields.Nested(job_input_data_model,
-                                                       required=True,
-                                                       description="Execution input such as script/host details",
-                                                       skip_none=True)),
+        'host_details': fields.List(fields.Nested(job_input_data_model,
+                                                  required=True,
+                                                  description="Execution input such as script/host details",
+                                                  skip_none=True)),
         "config_type": fields.String(description='Config type of the script(s)')
     }
 
 
 def script_execute_job_input_model(wild_card_model):
     return {
-        "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
-                                                      "or custom json", default="script", enum=["script", "json"]),
-        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
-        "script_name": fields.List(fields.String, required=True, description='Name of the scripts to execute. '
-                                                                             'This can be fetched from '
-                                                                             'listScripts/describeScripts API'),
-        "username": fields.String(required=True, description="Username of the target machine"),
-        "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)",
-                                  enum=["linux", "windows"]),
         "host": fields.String(required=True, description="Target machine's IP/DNS"),
+        "username": fields.String(required=True, description="Username of the target machine"),
         "password": fields.String(description="Password of the target machine's IP/DNS"),
         "keypair_flag": fields.String(required=True,
                                       description="Flag to indicate whether to connect using keypair or not"),
         "key_file": fields.String(required=True, description="Private key content if keypair_flag is true"),
-        "port": fields.String(required=True, description="SSH/WinRM port")
+        "port": fields.String(required=True, description="SSH/WinRM port"),
+        "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)",
+                                  enum=["linux", "windows"]),
+        "script_name": fields.List(fields.String, required=True, description='Name of the scripts to execute. '
+                                                                             'This can be fetched from '
+                                                                             'listScripts/describeScript API'),
+        "playbook_hosts": fields.List(fields.String, required=True,
+                                      description='Required only for ansible scripts. '
+                                                  'Name of the hostgroup to be referred as per playbook. '
+                                                  'For eg, if you are installing a 3 tier app, you might have hostgroup '
+                                                  'such as dbserver, appserver, uiserver of the scripts to execute and '
+                                                  'the playbook tasks will be based on the hostgroups. '
+                                                  'The hostgroup initialized in a playbook can be fetched from '
+                                                  'scanScript API'),
+        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
+        "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
+                                                      "or custom json", default="script", enum=["script", "json"]),
     }
 
 
