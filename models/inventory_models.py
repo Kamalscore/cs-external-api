@@ -47,7 +47,7 @@ def inventory_category_count_response():
                                         description="Inventory category count details",
                                         attribute='data.category_count_details'),
         'resource_details': fields.List(fields.Raw, required=True,
-                                        description="Inventory category count details",
+                                        description="Inventory resource count details",
                                         attribute='data.all')
     }
 

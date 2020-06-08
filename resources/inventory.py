@@ -51,7 +51,7 @@ class InventoryCategoryDetails(Resource):
              description='Get inventory category/resource count based on the cloud',
              params={'service_name': {'description': '', 'in': 'query', 'type': 'str', 'enum': ['AWS', 'Azure'],
                                       'default': 'AWS'},
-                     "tenant_id": "Specify the tenant Id for the policy"},
+                     "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @api.expect(inventoryCategoryCountRequestModel, validate=True)
     @inventory_name_space.response(model=inventoryCategoryCountResponseModel, code=200, description='Success')
@@ -89,7 +89,7 @@ class InventoryResource(Resource):
              description='Get all the available filters for the corresponding cloud.',
              params={'service_name': {'description': 'Name of the service cloud', 'in': 'query',
                                       'type': 'str', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
-                     "tenant_id": "Specify the tenant Id for the policy"},
+                     "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @inventory_name_space.response(model=inventoryFiltersResponseModelList, code=200, description='Success')
     @inventory_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -121,7 +121,7 @@ class InventoryResource(Resource):
 
     @api.doc(id="GetInventoryDetails", name="Get Inventory Filters",
              description='Get resource details based on the cloud accounts, category, component, resource.',
-             params={"tenant_id": "Specify the tenant Id for the policy"},
+             params={"tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @api.expect(inventoryResourceRequestModel, validate=True)
     @inventory_name_space.response(model=inventoryResponseModel, code=200, description='Success')
