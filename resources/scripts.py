@@ -10,7 +10,7 @@ from flask_restplus import Resource, marshal
 
 from app import api
 from definitions.script_definitions import ScriptURLDefinitions
-from models.script_models import script_response_list, script_metadata_model, \
+from models.script_models import script_response_list, \
     script_data_model_list, script_delete_response, script_data_model_view, script_data_model_create, \
     script_info_model, script_minimum_requirements_model, script_create_update_response_model, \
     script_execute_response_model, script_execute_request, script_execute_job_input_model, script_data_model_scan, \
@@ -20,7 +20,6 @@ from utils.HelperUtils import getClassName, invoke_api
 
 wildcardModel = api.model('Dict', wild_card_model())
 script_name_space = api.namespace(name='Scripts', path="/", description='Manage Scripts')
-scriptMetadataModel = api.model('ScriptMetadata', script_metadata_model())
 scriptDataModelList = api.model('ScriptDataList', script_data_model_list())
 scriptDataModelView = api.model('ScriptDataView', script_data_model_view(wildcardModel))
 scriptInfoDataModel = api.model('ScriptInfo', script_info_model())
@@ -48,10 +47,16 @@ class Scripts(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(Scripts))
 
-    @api.doc(id='ListScript', name="ListScripts Request",
-             description='List all the scripts.',
+    @api.doc(id='ListScripts', name="ListScripts Request",
+             description='List all the scripts. '
+                         'Global Scripts - All user will have access to Corestack\'s Marketplace Scripts'
+                         ' (Can view and execute). Account - All users under that account will have access '
+                         '(Can view and execute). Only Account admins can update/delete. Tenant - Users with access to'
+                         ' the specific tenant will have access scripts (Can view and execute). Tenant admins can '
+                         'update/delete. Private - User who created will only have access.',
              security=['auth_user', 'auth_token'],
              params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
                  'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'str',
                            'enum': ['chef', 'ansible', 'puppet', 'shell']}
              })
@@ -74,8 +79,18 @@ class Scripts(Resource):
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id='CreateScript',
-             name="CreateScript Request", description='Creates a new script.',
-             security=['auth_user', 'auth_token'])
+             name="CreateScript Request",
+             description='Creates a new script under the tenant. '
+                         'However the script will be accessible based on its scope. '
+                         'Global Scripts - All user will have access to Corestack\'s Marketplace Scripts'
+                         ' (Can view and execute). Account - All users under that account will have access '
+                         '(Can view and execute). Only Account admins can update/delete. Tenant - Users with access to'
+                         ' the specific tenant will have access scripts (Can view and execute). Tenant admins can '
+                         'update/delete. Private - User who created will only have access.',
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'}
+             })
     @api.expect(createScriptReqModel, validate=True)
     @script_name_space.response(model=createUpdateResponseModel, code=201, description='Created')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -107,7 +122,12 @@ class ScriptByID(Resource):
 
     @api.doc(id='DescribeScript', name="DescribeScript Request",
              description='View script details.',
-             security=['auth_user', 'auth_token'])
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+             }
+             )
     @script_name_space.response(model=scriptDataModelView, code=200, description='Success')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -136,8 +156,14 @@ class ScriptByID(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(id='UpdateScript', name="UpdateScript Request", description='Updates a script.',
-             security=['auth_user', 'auth_token'])
+    @api.doc(id='UpdateScript', name="UpdateScript Request", description='Updates script details such as name, '
+                                                                         'script path, dependencies etc.,',
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+             }
+             )
     @api.expect(createScriptReqModel, validate=True)
     @script_name_space.response(model=createUpdateResponseModel, code=200, description='Updated')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -160,7 +186,10 @@ class ScriptByID(Resource):
         except Exception as e:
             script_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
-    @api.doc(id='DeleteScript', name="DeleteScript Request", description='Deletes a script.',
+    @api.doc(id='DeleteScript', name="DeleteScript Request", description='Deletes a script. Cannot undo this action, '
+                                                                         'so be cautious when performing this operation.'
+                                                                         ' Use updateScript to make the script as '
+                                                                         'inactive if required',
              security=['auth_user', 'auth_token'])
     @script_name_space.response(model=createUpdateResponseModel, code=200, description='Deleted')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -195,15 +224,21 @@ class ScanScript(Resource):
                          'satisfied. This API will also return '
                          'parameters available in script for chef and '
                          'parameter & hosts available in the script for ansible',
-             security=['auth_user', 'auth_token'])
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+             }
+             )
     @api.expect(scanScriptReqModel, validate=True)
-    @script_name_space.response(model=createUpdateResponseModel, code=201, description='Scanned')
+    @script_name_space.response(model=scanResponseModel, code=201, description='Scanned successfully')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, scanScriptReqModel, ordered=True, skip_none=True)
+            req_body['file_authentication'] = False
             format_params = {
                 'tenant_id': tenant_id
             }
@@ -226,8 +261,15 @@ class ExecuteScript(Resource):
         self.logger = logging.getLogger(getClassName(ExecuteScript))
 
     @api.doc(id='ExecuteScript',
-             name="Execute Script Request", description='Execute a script.',
-             security=['auth_user', 'auth_token'])
+             name="Execute Script Request", description='Execute scripts. Ansible script supports executing single '
+                                                        'script in multiple machines. Chef/Puppet/Shell executing '
+                                                        'multiple scripts against multiple target machines.',
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+             }
+             )
     @api.expect(executeScriptReqModel, validate=True)
     @script_name_space.response(model=executeResponseModel, code=200, description='Execution Initiated')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -236,6 +278,7 @@ class ExecuteScript(Resource):
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, executeScriptReqModel, ordered=True, skip_none=True)
+            req_body['job_details'] = req_body.pop('execution_details', None)
             format_params = {
                 'tenant_id': tenant_id
             }

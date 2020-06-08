@@ -16,4 +16,5 @@ cover
 .pydevproject
 .idea/
 .vscode/*
+vnev
 venv/*

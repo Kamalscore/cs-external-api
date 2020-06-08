@@ -6,45 +6,43 @@ __author__ = 'nagalakshmi'
 from flask_restplus import fields
 
 
-def script_metadata_model():
-    return {
-        'is_scanned': fields.String(required=False,
-                                    description="Flag to indicate whether the script is scanned or not.")
-    }
-
-
 def script_data_model_list():
     return {
-        'script_id': fields.String(required=True, description="Script Id", attribute='id'),
-        'script_name': fields.String(required=True, description="Script Name", attribute='name'),
+        'script_id': fields.String(required=True, description="Unique Id of the script", attribute='id'),
+        'script_name': fields.String(required=True, description="Name of the script", attribute='name'),
         'uri': fields.String(required=True, description="Unique URI for script"),
         'description': fields.String(required=True, description="Description about script"),
         'status': fields.String(required=True, description="Status of the script"),
-        'category': fields.List(fields.Raw, required=True, description="Script Category"),
-        'platform': fields.List(fields.Raw, required=True, description="Platforms supported by script."),
-        'operating_system': fields.List(fields.Raw(), required=True, description="OS supported by script"),
+        'category': fields.List(fields.String, required=True, description="Script Category"),
+        'platform': fields.List(fields.String, required=True, description="Platforms supported by script."),
+        'operating_system': fields.List(fields.String, required=True, description="OS supported by script"),
         'type': fields.String(required=True, description="Config type of the script", attribute='config_type'),
-        'scope': fields.String(required=True, description="Scope of the script.")
+        'scope': fields.String(required=True, description="Scope of the script (global/account/tenant/private)")
     }
 
 
 def script_data_model_view(wild_card_model):
     return {
-        'script_id': fields.String(required=True, description="Script Id", attribute='data.id'),
-        'script_name': fields.String(required=True, description="Script Name", attribute='data.name'),
+        'script_id': fields.String(required=True, description="Unique Id of the script", attribute='data.id'),
+        'script_name': fields.String(required=True, description="Name of the script", attribute='data.name'),
         'uri': fields.String(required=True, description="Unique URI for script", attribute='data.uri'),
         'description': fields.String(required=True, description="Description about script",
                                      attribute='data.description'),
-        'status': fields.String(required=True, description="Status of the script", attribute='data.status'),
+        'status': fields.String(required=True, description="Status of the script(active/inactive)."
+                                                           " Only active scripts can be executed",
+                                attribute='data.status'),
         'category': fields.List(
             fields.Raw(enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
-                             "Others"]), required=True, description="Script Category", attribute='data.category'),
+                             "Others"]), required=True, description="Category the script belongs to the script",
+            attribute='data.category'),
         'platform': fields.List(fields.Raw, required=True, description="Platforms supported by script.",
                                 attribute='data.platform'),
         'operating_system': fields.List(fields.Raw, required=True, description="OS supported by script",
                                         attribute='data.operating_systems'),
-        'type': fields.String(required=True, description="Config type of the script", attribute='data.config_type'),
-        'scope': fields.String(required=True, description="Scope of the script", attribute='data.scope'),
+        'type': fields.String(required=True, description="Config type of the script (chef/ansible/shell/puppet)",
+                              attribute='data.config_type'),
+        'scope': fields.String(required=True, description="Scope of the script  (global/account/tenant/private)",
+                               attribute='data.scope'),
         'path_type': fields.String(required=True, description="Script path type such as"
                                                               " git/url/repository(puppet_alone)/galaxy(ansible).",
                                    attribute='data.path_type'),
@@ -78,7 +76,7 @@ def script_data_model_view(wild_card_model):
 def script_response_list(script_data_model):
     return {
         'scripts': fields.Nested(script_data_model,
-                                 required=True, description="Metadata Info.",
+                                 required=True, description="Scripts List.",
                                  attribute='data.scripts',
                                  skip_none=True),
     }
@@ -86,8 +84,9 @@ def script_response_list(script_data_model):
 
 def script_info_model():
     return {
-        'path_type': fields.String(required=True, description="path_type"),
-        'name': fields.String(required=True, description="Script Name"),
+        'path_type': fields.String(required=True, description="Path type "
+                                                              "git/url/repository(puppet_alone)/galaxy(ansible)."),
+        'name': fields.String(required=True, description="Script Name as available in the path"),
         'path': fields.String(required=True, description="Path of the script")
     }
 
@@ -99,18 +98,16 @@ def script_data_model_scan(script_info_model):
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
         'dependencies': fields.List(
             fields.Nested(script_info_model, description='Details of the dependent scripts if any')),
-        "file_authentication": fields.Boolean(required=True, description='Flag to indicate authentication required for '
-                                                                         'downloading the script',
-                                              default=False),
         'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts")
     }
 
 
 def script_data_model_create(script_info_model, wild_card_model, minimum_requirements_model):
     return {
-        'name': fields.String(required=True, description="Script Name"),
-        'uri': fields.String(description="Unique URI for script"),
-        'description': fields.String(description="Description about script"),
+        'name': fields.String(required=True, description="Name of the script and it should be unique."),
+        'uri': fields.String(description="Unique URI for script - eg: script/ansi/linux/lamp_install. "
+                                         "If not provided, corestack will generate it automatically"),
+        'description': fields.String(description="Detailed description about script"),
         'category': fields.List(
             fields.String(enum=["Application", "Languages", "Database", "Security", "System", "Web Server",
                                 "Others"]), required=True, description="Script Category"),
@@ -121,7 +118,11 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
         'config_type': fields.String(required=True, description="Config type of the script. "
                                                                 "Create is supported for ansible type scripts alone for now",
                                      enum=['ansible']),
-        'scope': fields.String(required=True, description="Scope of the script", enum=['private', 'account', 'tenant']),
+        'scope': fields.String(required=True, description="Scope of the script. "
+                                                          'Account - Only Account admins can create/update/delete. '
+                                                          'Tenant - Only Tenant admins can create/update/delete. '
+                                                          'Private - All Users can create/update/delete.',
+                               enum=['private', 'account', 'tenant']),
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
         'dependencies': fields.List(
@@ -154,10 +155,10 @@ def script_create_update_response_model():
 def script_execute_request(job_input_data_model):
     return {
         'job_name': fields.String(required=True, description="Name of the script job"),
-        'job_details': fields.List(fields.Nested(job_input_data_model,
-                                                 required=True,
-                                                 description="Execution input such as script/host details",
-                                                 skip_none=True)),
+        'execution_details': fields.List(fields.Nested(job_input_data_model,
+                                                       required=True,
+                                                       description="Execution input such as script/host details",
+                                                       skip_none=True)),
         "config_type": fields.String(description='Config type of the script(s)')
     }
 
@@ -167,7 +168,9 @@ def script_execute_job_input_model(wild_card_model):
         "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
                                                       "or custom json", default="script", enum=["script", "json"]),
         "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
-        "script_name": fields.List(fields.String, required=True, description='script info'),
+        "script_name": fields.List(fields.String, required=True, description='Name of the scripts to execute. '
+                                                                             'This can be fetched from '
+                                                                             'listScripts/describeScripts API'),
         "username": fields.String(required=True, description="Username of the target machine"),
         "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)",
                                   enum=["linux", "windows"]),
@@ -182,7 +185,8 @@ def script_execute_job_input_model(wild_card_model):
 
 def script_execute_response_model():
     return {
-        'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='data.job_id')
+        'script_job_id': fields.String(description="Unique ID of the Script Job. Use this ID in describeScriptJob API "
+                                                   "and check the execution status", attribute='data.job_id')
     }
 
 
@@ -197,5 +201,5 @@ def script_scan_response_model(wild_card_model):
 
 def script_delete_response():
     return {
-        'message': fields.String(required=True, description="Response message.")
+        'message': fields.String(required=True, description="Delete Response message.")
     }

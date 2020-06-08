@@ -32,7 +32,12 @@ class DescribeScriptJob(Resource):
 
     @api.doc(id='DescribeScriptJob', name="ViewScriptJob Request",
              description='View script job details.',
-             security=['auth_user', 'auth_token'])
+             security=['auth_user', 'auth_token'],
+             params={
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
+                 'script_job_id': {'description': 'ID of the script_job. This can be fetched from listScriptJobs API/'
+                                                  'scriptExecute response'}
+             })
     @script_job_name_space.response(model=scriptJobDataModelView, code=200, description='Success')
     @script_job_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_job_name_space.response(model=errorModel, code=401, description='Unauthorized')
