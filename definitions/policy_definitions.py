@@ -31,5 +31,9 @@ class PolicyURLDefinitions(object):
         job_details=dict(
             path='/v1/{project_id}/policy_jobs/{job_id}',
             method='get'
+        ),
+        policy_recommendations=dict(
+            path='/v1/{project_id}/recommendations',
+            method='get'
         )
     )

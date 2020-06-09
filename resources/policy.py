@@ -11,7 +11,8 @@ from app import api
 from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
-    policy_response_list, policy_execute_model, service_account_details, policy_execute_response, policy_job_response
+    policy_response_list, policy_execute_model, service_account_details, policy_execute_response, policy_job_response, \
+    policy_recommendation_response, policy_recommendations_response_list
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -31,6 +32,10 @@ executePolicyReqModel = api.model('PolicyExecuteRequestModel', policy_execute_mo
                                                                                     service_account_details))
 executePolicyResponseModel = api.model("PolicyExecuteResponseModel", policy_execute_response())
 jobDetailsResponseModel = api.model("JobExecutionDetailsResponseModel", policy_job_response())
+policyRecommendationResponseModel = api.model("PolicyRecommendationResponseModel",
+                                              policy_recommendation_response())
+policyRecommendationResponseList = api.model("PolicyRecommendationResponseModel",
+                                             policy_recommendations_response_list(policyRecommendationResponseModel))
 errorModel = api.model('Error', error())
 policy_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -71,7 +76,9 @@ class PolicyResource(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -105,7 +112,9 @@ class PolicyResource(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyResponseModelList)
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -137,7 +146,9 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyViewResponse), 200
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -169,7 +180,9 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), policyUpdateResponse), 200
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -193,7 +206,9 @@ class PolicyResourceById(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), PolicyRemovalResModel), 200
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -239,7 +254,9 @@ class PolicyActionsByName(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
@@ -269,10 +286,53 @@ class PolicyJobs(Resource):
             args = request.args
             format_params = {'project_id': tenant_id, "job_id": job_id}
             response = invoke_api(policy_api_definition, 'job_details', format_params, args=args, headers=headers)
-            value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), jobDetailsResponseModel), 200
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
+        except Exception as e:
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+
+@policy_name_space.route("/v1/<string:tenant_id>/recommendations")
+class PolicyRecommendations(Resource):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(PolicyJobs))
+
+    @api.doc(id="PolicyRecommendations", name="Policy Job details request",
+             description='Policy recommendations are the guide line to the users to solve a policy violation by '
+                         'executing the recommendations the this can be a instruction or a combination of multiple'
+                         'instructions defined to solve a problem',
+             params={"tenant_id": "Specify the tenant Id for the policy which is a unique value can be obtained from "
+                                  "the list tenant api",
+                     "policy_id": "specify the policy id for the recommendations which is a unique id can be obtained "
+                                  "from policy listing api",
+                     "cloud_account_id": "specify the cloud account id  for the recommendation which is a unique id "
+                                         "can be retrieved from the cloud listing api"},
+
+             security=['auth_user', 'auth_token'])
+    @policy_name_space.response(model=policyRecommendationResponseList, code=200, description='Success')
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id):
+        try:
+            headers = request.headers
+            args = request.args.to_dict()
+            t = args.pop("cloud_account_id")
+            args["service_account_id"] = t
+            format_params = {'project_id': tenant_id}
+            response = invoke_api(policy_api_definition, 'policy_recommendations', format_params, args=args,
+                                  headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), policyRecommendationResponseList), 200
+            else:
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
         except Exception as e:
             policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")

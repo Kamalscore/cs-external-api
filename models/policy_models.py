@@ -204,6 +204,34 @@ def policy_job_response():
     }
 
 
+def policy_recommendation_response():
+    return {
+        "recommendation_id": fields.String(required=True, description="unique recommendation Id",
+                                           attribute='id'),
+        "recommendation_name": fields.String(required=True, description="unique recommendation Id",
+                                             attribute='name'),
+        "policy_id": fields.List(fields.String, required=True, description="list of policy ids for which the "
+                                                                           "recommendation exists",
+                                 attribute='policy_id'),
+        "status": fields.String(required=True, description="resolution status of the recommendation the values will be"
+                                                           "open, resolved",
+                                attribute='status'),
+        "impact": fields.String(required=True, description="impact of recommended changes", attribute='impact'),
+        "classification": fields.String(required=True, description="classified based on the kind of recommendation"
+                                                                   "provided to the user can be cost, security etc"
+                                        , attribute='classification'),
+        "cloud_account_id": fields.String(required=True, description="cloud account id impacted by the recommendation",
+                                          attribute='service_account_id'),
+        "cloud": fields.String(required=True, description="cloud on which this account exits for which the "
+                                                          "recommendations exists", attribute='service_name'),
+        "tenant_name": fields.String(required=True, description="tenant for which the recommendation exits ",
+                                     attribute='project_name'),
+        "created_at": fields.String(required=True, description="time at which the recommendation was created",
+                                    attribute='created_at'),
+
+    }
+
+
 def policy_execute_model(arguments, service_account):
     return {
         "args": fields.Nested(arguments, required=True, default={},
@@ -262,4 +290,13 @@ def policy_update_response():
     return {
         'message': fields.String(required=True, description="Response Message on update",
                                  attribute="message")
+    }
+
+
+def policy_recommendations_response_list(data_model):
+    return {
+        'recommendations': fields.Nested(data_model,
+                                         required=True, description="Policy recommendation Info list",
+                                         attribute='data.recommendations',
+                                         skip_none=True),
     }
