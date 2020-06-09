@@ -14,7 +14,7 @@ from models.inventory_models import inventory_filter_response, inventory_filter_
     inventory_category_count_request, inventory_category_count_response, inventory_category_count_data_model_list, \
     inventory_category_count_filter_data_model, inventory_response_details, \
     inventory_resource_request_filter_data_model, inventory_resource_request, inventory_resource_list_model_data, \
-    inventory_resource_count_model_data, inventory_category_count_model_data
+    inventory_resource_count_model_data, inventory_category_count_model_data, inventory_tags_model_list
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -24,8 +24,10 @@ wildcardModel = api.model('Dict', wild_card_model())
 inventoryFilterDataModelList = api.model('InventoryData', inventory_filter_data_model_list())
 inventoryFiltersResponseModelList = api.model('InventoryResponse',
                                               inventory_filter_response(inventoryFilterDataModelList))
+inventoryTagsModelList = api.model('InventoryTagsModelList', inventory_tags_model_list())
 # Category count api
-inventoryCountDetailsModel = api.model('CountDetailsDataModel', inventory_category_count_filter_data_model())
+inventoryCountDetailsModel = api.model('CountDetailsDataModel',
+                                       inventory_category_count_filter_data_model(inventoryTagsModelList))
 inventoryCategoryCountRequestModel = api.model('CategoryCountRequest',
                                                inventory_category_count_request(inventoryCountDetailsModel))
 inventoryCategoryCountDataModelList = api.model('CategoryCount', inventory_category_count_data_model_list())
@@ -36,7 +38,7 @@ inventoryCategoryCountResponseModel = api.model(
                                                                inventoryResourceResponseModelList))
 # inventory resource details
 inventoryResourceRequestModelDataList = api.model('InventoryResourceDetailsDataModel',
-                                                  inventory_resource_request_filter_data_model())
+                                                  inventory_resource_request_filter_data_model(inventoryTagsModelList))
 inventoryResourceRequestModel = api.model('InventoryResourceDetailsRequest',
                                           inventory_resource_request(inventoryResourceRequestModelDataList))
 inventoryResourceDetailsModelList = api.model('InventoryResourceDetailsModelList', inventory_resource_list_model_data())

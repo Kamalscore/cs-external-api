@@ -5,6 +5,12 @@
 from flask_restplus import fields
 
 
+def inventory_tags_model_list():
+    return {
+        'key': fields.List(fields.String, required=False, description="Tags associated with the resource for inventory")
+    }
+
+
 def inventory_filter_data_model_list():
     return {
         'data': fields.List(fields.Raw, required=True, description="Filters available in inventory"),
@@ -19,11 +25,14 @@ def inventory_filter_response(inventory_filter_data_model):
     }
 
 
-def inventory_category_count_filter_data_model():
+def inventory_category_count_filter_data_model(inventory_tags_model_list_data):
     return {
         'cloud_account': fields.List(fields.String, required=True, description="Id's for the cloud account"),
         'resource_category': fields.String(required=False, description="Name for the category"),
-        'region': fields.List(fields.String, required=False, description="List of regions for the resource filter data")
+        'region': fields.List(fields.String, required=False,
+                              description="List of regions for the resource filter data"),
+        'tags': fields.Nested(inventory_tags_model_list_data, required=False,
+                              description="List of tags associated with the resource details")
     }
 
 
@@ -73,14 +82,17 @@ def inventory_category_count_response(inventory_category_count_model_data_list, 
     }
 
 
-def inventory_resource_request_filter_data_model():
+def inventory_resource_request_filter_data_model(inventory_tags_model_list_data):
     return {
         'cloud': fields.String(required=True, description="Name of the cloud"),
         'cloud_account': fields.List(fields.String, required=True, description="Id of the cloud account"),
         'resource_category': fields.String(required=True, description="Name of the category"),
         'resource_type': fields.String(required=True, description="Name of the component"),
         'resource': fields.String(required=True, description="Name of the resource"),
-        'region': fields.List(fields.String, required=False, description="List of regions for the resource filter data")
+        'region': fields.List(fields.String, required=False,
+                              description="List of regions for the resource filter data"),
+        'tags': fields.Nested(inventory_tags_model_list_data, required=False,
+                              description="List of tags associated with the resource details")
     }
 
 
