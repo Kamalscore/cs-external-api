@@ -77,12 +77,14 @@ def script_data_model_view(wild_card_model):
 
 def script_response_list(script_data_model):
     return {
+        'total_scripts': fields.String(required=True, description="Total number of scripts available",
+                                       attribute='data.total_count'),
+        'total_pages': fields.String(required=True, description="Total number of pages",
+                                     attribute='data.page_count'),
         'scripts': fields.Nested(script_data_model,
                                  required=True, description="Scripts List.",
                                  attribute='data.scripts',
-                                 skip_none=True),
-        'total_scripts': fields.String(required=True, description="Total number of scripts available",
-                                       attribute='total_count')
+                                 skip_none=True)
     }
 
 
@@ -136,15 +138,14 @@ def script_data_model_create(script_info_model, wild_card_model, minimum_require
 
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
         'dependencies': fields.List(
-            fields.Nested(script_info_model, description='Details of the dependent scripts if any')),
-        'input_source': fields.String(description="Input source of the script during execution (Script/Resource)",
-                                      default='Script'),
-        'is_scanned': fields.String(description="Whether the script needs to be scanned or not", default=True),
-        'scanned_parameters': fields.Nested(wild_card_model, description="Parameter object scanned by corestack"),
+            fields.Nested(script_info_model,
+                          description='Details of the dependent scripts if any. '
+                                      'For eg., A LAMP script will have apache, mysql, php as dependent scripts.'
+                                      'This can be skipped if there are no dependent scripts or'
+                                      ' if the actual script takes care of installing all dependencies')),
         'minimum_requirement': fields.Nested(minimum_requirements_model,
-                                             description="Minimum requirements to install the script"),
-        'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts"),
-        'parameters': fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
+                                             description="Minimum requirements of the target machine to install the script"),
+        'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts")
     }
 
 

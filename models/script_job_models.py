@@ -6,6 +6,34 @@ __author__ = 'nagalakshmi'
 from flask_restplus import fields
 
 
+def script_job_list_model():
+    return {
+        'script_job_id': fields.String(description="Unique ID of the Script Job", attribute='id'),
+        'script_job_name': fields.String(description="Name of the Script Job", attribute='name'),
+        'status': fields.String(required=True, description="Overall status of the script execution", attribute='status'),
+        'status_reason': fields.String(required=True, description="Error message if failed", attribute='status_reason'),
+        'started_at': fields.String(required=True, description="Script Job start time in UTC", attribute='created_at'),
+        'completed_at': fields.String(required=True, description="Script Job completion time in UTC"
+                                      , attribute='completed_at', skip_none=True),
+        'execution_type': fields.String(required=True, description="Script Job execution type (on_demand/scheduled)",
+                                        attribute='execution_type'),
+        "initiated_by" : fields.String(required=True, description="User who initiated the script execution",
+                                        attribute='user_name')
+    }
+
+
+def script_job_list_response(script_job_list_model):
+    return {
+        'total_script_jobs': fields.String(required=True, description="Total number of script jobs available",
+                                       attribute='data.total_count'),
+        'total_pages': fields.String(required=True, description="Total number of pages",
+                                     attribute='data.page_count'),
+        'script_jobs': fields.Nested(script_job_list_model,
+                                 required=True, description="Script Jobs List.",
+                                 attribute='data.jobs',
+                                 skip_none=True)
+    }
+
 def script_job_script_info_data_model(wild_card_model):
     return {
         'script_id': fields.String(required=True, description="Script Id", attribute='id'),

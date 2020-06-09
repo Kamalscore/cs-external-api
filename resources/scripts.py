@@ -105,6 +105,8 @@ class Scripts(Resource):
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            req_body['file_authentication'] = False
+            req_body['input_source'] = 'Script'
             format_params = {
                 'tenant_id': tenant_id
             }
@@ -127,7 +129,7 @@ class ScriptByID(Resource):
         self.logger = logging.getLogger(getClassName(ScriptByID))
 
     @api.doc(id='DescribeScript', name="DescribeScript Request",
-             description='View script details.',
+             description='This API will provide detailed information about the script.',
              security=['auth_user', 'auth_token'],
              params={
                  'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
