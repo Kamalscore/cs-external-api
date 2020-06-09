@@ -54,7 +54,10 @@ class InventoryCategoryDetails(Resource):
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
     @api.doc(id="GetInventoryCount", name="Get inventory category count",
-             description='Get inventory category/resource count based on the cloud',
+             description='Get inventory category count based on the cloud and cloud account will '
+                         'list categories & Get inventory resource count based on the cloud and cloud account '
+                         'will list all resources with resource_category, resource_type, resource and will list '
+                         'only the count on number of resources available in particular category',
              params={'service_name': {'description': '', 'in': 'query', 'type': 'string', 'enum': ['AWS', 'Azure'],
                                       'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
@@ -67,6 +70,11 @@ class InventoryCategoryDetails(Resource):
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, inventoryCategoryCountRequestModel, ordered=True, skip_none=True)
+            if req_body.get('filters', {}):
+                filters = req_body.get('filters')
+                resource_category = req_body.get("filters", {}).get("resource_category", None)
+                if resource_category:
+                    filters["category"] = req_body.get("filters").get("resource_category")
             format_params = {
                 'tenant_id': tenant_id
             }
@@ -91,8 +99,12 @@ class InventoryResource(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
-    @api.doc(id="GetInventoryFilters", name="Get Inventory Filters",
-             description='Get all the available filters for the corresponding cloud.',
+    @api.doc(id="ListInventoryFilters", name="List Inventory Filters",
+             description='Get all the available filters for the corresponding cloud.'
+                         'Listing filter attributes will help us in getting resource details with the filters listed '
+                         'can be applied on the resource details call and this api is only to list filters'
+                         'for ex: AWS will have regions and tags as filters available and '
+                         'Azure will have resource groups and tags as filters',
              params={'service_name': {'description': 'Name of the service cloud', 'in': 'query',
                                       'type': 'string', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
@@ -126,7 +138,9 @@ class InventoryResource(Resource):
         self.logger = logging.getLogger(getClassName(InventoryResource))
 
     @api.doc(id="GetInventoryDetails", name="Get Inventory Filters",
-             description='Get resource details based on the cloud accounts, category, component, resource.',
+             description='Get resource details based on the cloud accounts, category, component, resource and '
+                         'filters can be applied based on the cloud and cloud account for ex: AWS will have regions in '
+                         'filters and Azure will have resource group as filters for listing resources.',
              params={"tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @api.expect(inventoryResourceRequestModel, validate=True)
@@ -137,6 +151,14 @@ class InventoryResource(Resource):
     def post(self, tenant_id):
         try:
             req_body = marshal(request.json, inventoryResourceRequestModel, ordered=True, skip_none=True)
+            req_body['category'] = req_body.pop('resource_category', None)
+            req_body['component'] = req_body.pop('resource_type', None)
+            req_body['resource'] = req_body.pop('resource', None)
+            if req_body.get('filters', {}):
+                filters = req_body.get('filters')
+                resource_category = req_body.get("filters", {}).get("cloud", None)
+                if resource_category:
+                    filters["service"] = req_body.get("filters").get("cloud")
             format_params = {
                 'tenant_id': tenant_id
             }
