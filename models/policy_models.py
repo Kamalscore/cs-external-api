@@ -208,7 +208,7 @@ def policy_recommendation_response():
     return {
         "recommendation_id": fields.String(required=True, description="unique recommendation Id",
                                            attribute='id'),
-        "recommendation_name": fields.String(required=True, description="unique recommendation Id",
+        "recommendation_name": fields.String(required=True, description="recommendation name",
                                              attribute='name'),
         "policy_id": fields.List(fields.String, required=True, description="list of policy ids for which the "
                                                                            "recommendation exists",
@@ -229,6 +229,64 @@ def policy_recommendation_response():
         "created_at": fields.String(required=True, description="time at which the recommendation was created",
                                     attribute='created_at'),
 
+    }
+
+
+def recommendation_action_response():
+    return {
+        "name": fields.String(required=True, description="recommendation action name"),
+        "terms_and_conditions": fields.String(required=True, description="Terms and conditions for performing the "
+                                                                         "recommended action"),
+        "resource_level": fields.String(required=True, description="if the action will be performed at the resource "
+                                                                   "level"),
+        "action_type": fields.String(required=True, description="Type of action will be always template"),
+        "action_resource_name": fields.String(required=True, description="Name of template"),
+        "description": fields.String(required=True, description="Description about the action in details"),
+    }
+
+
+def resource_recommendation_response():
+    return {
+        "id": fields.String(required=True, description="unique identifier for resource recommendation"),
+        "resource_id": fields.String(required=True, description=" Resource identifier id of resource recommendation"),
+        "resource_name": fields.String(required=True, description="Resource identifier name of resource recommendation"),
+        "resource_type": fields.String(required=True, description="Type of resource"),
+        "resourcegroup_location": fields.String(required=True, description="resource group location"),
+        "status": fields.String(required=True, description="Status of resource recommendation")
+    }
+
+
+def policy_view_recommendation_response(actions_obj, resource_obj):
+    return {
+        "recommendation_id": fields.String(required=True, description="unique recommendation Id",
+                                           attribute='data.id'),
+        "recommendation_name": fields.String(required=True, description="recommendation name",
+                                             attribute='data.name'),
+        "policy_id": fields.List(fields.String, required=True, description="list of policy ids for which the "
+                                                                           "recommendation exists",
+                                 attribute='data.policy_id'),
+        "status": fields.String(required=True, description="resolution status of the recommendation the values will be"
+                                                           "open, resolved", attribute='data.status'),
+        "impact": fields.String(required=True, description="impact of recommended changes", attribute='data.impact'),
+        "classification": fields.String(required=True, description="classified based on the kind of recommendation"
+                                                                   "provided to the user can be cost, security etc"
+                                        , attribute='data.classification'),
+        "cloud_account_id": fields.String(required=True, description="cloud account id impacted by the recommendation",
+                                          attribute='data.service_account_id'),
+        "cloud": fields.String(required=True, description="cloud on which this account exits for which the "
+                                                          "recommendations exists", attribute='data.service_name'),
+        "tenant_name": fields.String(required=True, description="tenant for which the recommendation exits ",
+                                     attribute='data.project_name'),
+        "created_at": fields.String(required=True, description="time at which the recommendation was created",
+                                    attribute='data.created_at'),
+        "description": fields.String(required=True, description="Description about the recommendation in details",
+                                     attribute='data.description'),
+        "actions": fields.List(fields.Nested(actions_obj), required=True,
+                               description="List of actions which can be performed to resolve the policy violations",
+                               attribute='data.actions', skip_none=True),
+        "resources": fields.List(fields.Nested(resource_obj), required=True,
+                                 description="List of resources on which the recommendations can be performed",
+                                 attribute='data.resources', skip_none=True),
     }
 
 

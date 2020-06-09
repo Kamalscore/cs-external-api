@@ -35,5 +35,9 @@ class PolicyURLDefinitions(object):
         policy_recommendations=dict(
             path='/v1/{project_id}/recommendations',
             method='get'
+        ),
+        recommendation_view=dict(
+            path='/v1/{project_id}/recommendations/{recommendation_id}',
+            method='get'
         )
     )

@@ -12,7 +12,8 @@ from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
     policy_response_list, policy_execute_model, service_account_details, policy_execute_response, policy_job_response, \
-    policy_recommendation_response, policy_recommendations_response_list
+    policy_recommendation_response, policy_recommendations_response_list, policy_view_recommendation_response, \
+    recommendation_action_response, resource_recommendation_response
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -36,6 +37,11 @@ policyRecommendationResponseModel = api.model("PolicyRecommendationResponseModel
                                               policy_recommendation_response())
 policyRecommendationResponseList = api.model("PolicyRecommendationResponseModelList",
                                              policy_recommendations_response_list(policyRecommendationResponseModel))
+RecommendationActionResponseModel = api.model("RecommendationActionResponseModel", recommendation_action_response())
+ResourceRecommendationResponseModel = api.model("ResourceRecommendationModel", resource_recommendation_response())
+policyRecommendationViewResponse = api.model("PolicyRecommendationViewResponseModel",
+                                             policy_view_recommendation_response(RecommendationActionResponseModel,
+                                                                                 ResourceRecommendationResponseModel))
 errorModel = api.model('Error', error())
 policy_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -303,7 +309,7 @@ class PolicyRecommendations(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(PolicyJobs))
 
-    @api.doc(id="PolicyRecommendations", name="Policy Job details request",
+    @api.doc(id="PolicyRecommendations", name="Policy recommendation request",
              description='Policy recommendations are the guide line to the users to solve a policy violation by '
                          'executing the recommendations the this can be a instruction or a combination of multiple'
                          'instructions defined to solve a problem',
@@ -330,6 +336,44 @@ class PolicyRecommendations(Resource):
                                   headers=headers)
             if response.status_code == 200:
                 return marshal(response.json(), policyRecommendationResponseList), 200
+            else:
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
+        except Exception as e:
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+
+@policy_name_space.route("/v1/<string:tenant_id>/recommendations/<string:recommendation_id>")
+class ViewRecommendations(Resource):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(PolicyJobs))
+
+    @api.doc(id="DescribePolicyRecommendations", name="Describe policy recommendation",
+             description='This is the api to view the recommendation associated with the policy and the resources'
+                         'which will get effected on execution of the recommendations. We can also get a idea on the'
+                         'actions which can be performed',
+             params={"tenant_id": "Specify the tenant Id for the recommendation which is a unique value can be "
+                                  "obtained from the list tenant api",
+                     "recommendation_id": "This is a unique identifier for recommendation, can be obtained from the  "
+                                          "PolicyRecommendations api response"
+                     },
+             security=['auth_user', 'auth_token'])
+    @policy_name_space.response(model=policyRecommendationViewResponse, code=200, description='Success')
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id, recommendation_id):
+        try:
+            headers = request.headers
+            args = request.args
+            format_params = {'project_id': tenant_id, "recommendation_id": recommendation_id}
+            response = invoke_api(policy_api_definition, 'recommendation_view', format_params, args=args,
+                                  headers=headers)
+            if response.status_code == 200:
+                return marshal(response.json(), policyRecommendationViewResponse), 200
             else:
                 message, response_code = marshal(response.json(), errorModel), response.status_code
                 message["message"] = message.get("message").replace("project", "tenant")
