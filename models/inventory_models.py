@@ -21,16 +21,17 @@ def inventory_filter_response(inventory_filter_data_model):
 
 def inventory_category_count_filter_data_model():
     return {
-        'cloud_account': fields.List(fields.String, required=False, description="Id's for the cloud account"),
-        'category': fields.String(required=False, description="Name for the category"),
+        'cloud_account': fields.List(fields.String, required=True, description="Id's for the cloud account"),
+        'resource_category': fields.String(required=False, description="Name for the category"),
+        'region': fields.List(fields.String, required=False, description="List of regions for the resource filter data")
     }
 
 
 def inventory_category_count_request(inventory_count_detail_model):
     return {
         'identifier': fields.String(required=True, description="Category/Resource based count for the cloud",
-                                    default="category"),
-        'filters': fields.Nested(inventory_count_detail_model, required=False, description="Resource filters detail")
+                                    default="category", enum=["category", "resource"]),
+        'filters': fields.Nested(inventory_count_detail_model, required=True, description="Resource filters detail")
     }
 
 
@@ -65,26 +66,27 @@ def inventory_category_count_response(inventory_category_count_model_data_list, 
     return {
         'category_details': fields.Nested(inventory_category_count_model_data_list, required=False,
                                           description="Inventory category count details",
-                                          attribute='data.category_count_details'),
+                                          attribute='data.category_count_details', skip_none=True),
         'resource_details': fields.Nested(inventory_resource_count_model_data_list, required=False,
                                           description="Inventory resource count details",
-                                          attribute='data.all')
+                                          attribute='data.all', skip_none=True)
     }
 
 
 def inventory_resource_request_filter_data_model():
     return {
-        'cloud_account': fields.List(fields.String, required=False, description="Id of the cloud account"),
-        'category': fields.String(required=False, description="Name of the category"),
-        'component': fields.String(required=False, description="Name of the component"),
-        'resource': fields.String(required=False, description="Name of the resource"),
+        'cloud': fields.String(required=True, description="Name of the cloud"),
+        'cloud_account': fields.List(fields.String, required=True, description="Id of the cloud account"),
+        'resource_category': fields.String(required=True, description="Name of the category"),
+        'resource_type': fields.String(required=True, description="Name of the component"),
+        'resource': fields.String(required=True, description="Name of the resource"),
         'region': fields.List(fields.String, required=False, description="List of regions for the resource filter data")
     }
 
 
 def inventory_resource_request(inventory_resource_request_filter_data_model_list):
     return {
-        'filters': fields.Nested(inventory_resource_request_filter_data_model_list, required=False,
+        'filters': fields.Nested(inventory_resource_request_filter_data_model_list, required=True,
                                  description="Filter resource details")
     }
 
@@ -98,14 +100,13 @@ def inventory_resource_list_model_data():
                                           attribute='service_account_id'),
         'cloud_account_name': fields.String(required=True, description="Inventory summary details",
                                             attribute='service_account_name'),
-        'category': fields.String(required=True, description="Name of the category",
-                                  attribute='category'),
-        'component': fields.String(required=True, description="Name of the component",
-                                   attribute='component'),
+        'resource_category': fields.String(required=True, description="Name of the category",
+                                           attribute='category'),
+        'resource_type': fields.String(required=True, description="Name of the component", attribute='component'),
         'resource': fields.String(required=True, description="Name of the resource",
                                   attribute='resource'),
-        'check_resource_element': fields.String(required=True, description="Unique element for the resource",
-                                                attribute='check_resource_element'),
+        'corestack_resource_id': fields.String(required=True, description="Unique element for the resource",
+                                               attribute='check_resource_element'),
         'tags': fields.Raw(required=True, description="Tags associated with the resource", attribute='tags'),
         'summary_details': fields.Raw(required=True, description="Inventory summary details",
                                       attribute='summary_details'),
