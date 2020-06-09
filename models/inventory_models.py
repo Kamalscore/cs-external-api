@@ -54,20 +54,16 @@ def inventory_category_count_data_model_list():
 def inventory_resource_count_model_data():
     return {
         'count': fields.String(required=False, description="Inventory category count details", attribute='count'),
-        'category': fields.String(required=False, description="Name of the category",
-                                  attribute='category'),
-        'component': fields.String(required=False, description="Name of the component",
-                                   attribute='component'),
-        'resource': fields.String(required=False, description="Name of the resource",
-                                  attribute='resource'),
+        'resource_category': fields.String(required=False, description="Name of the category", attribute='category'),
+        'resource_type': fields.String(required=False, description="Name of the component", attribute='component'),
+        'resource': fields.String(required=False, description="Name of the resource", attribute='resource'),
     }
 
 
 def inventory_category_count_model_data():
     return {
         'count': fields.String(required=False, description="Inventory category count details", attribute='count'),
-        'category': fields.String(required=False, description="Name of the category",
-                                  attribute='category')
+        'resource_category': fields.String(required=False, description="Name of the category", attribute='category')
     }
 
 
