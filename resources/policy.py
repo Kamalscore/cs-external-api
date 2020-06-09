@@ -13,7 +13,8 @@ from models.policy_models import policy_delete_response, policy_create_model, cr
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
     policy_response_list, policy_execute_model, service_account_details, policy_execute_response, policy_job_response, \
     policy_recommendation_response, policy_recommendations_response_list, policy_view_recommendation_response, \
-    recommendation_action_response, resource_recommendation_response
+    recommendation_action_response, resource_recommendation_response, execute_recommendation_req, \
+    execute_recommendation_response
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -42,6 +43,9 @@ ResourceRecommendationResponseModel = api.model("ResourceRecommendationModel", r
 policyRecommendationViewResponse = api.model("PolicyRecommendationViewResponseModel",
                                              policy_view_recommendation_response(RecommendationActionResponseModel,
                                                                                  ResourceRecommendationResponseModel))
+executeRecommendationReqModel = api.model("ExecuteRecommendationRequestModel",
+                                          execute_recommendation_req(wildcardModel))
+executeRecommendationResModel = api.model("ExecuteRecommendationResponseModel", execute_recommendation_response())
 errorModel = api.model('Error', error())
 policy_api_definition = PolicyURLDefinitions.URLInfo
 
@@ -235,7 +239,7 @@ class PolicyActionsByName(Resource):
                      "policy_id": "specify the policy id to execute, policy id can be obtained from the list policy "
                                   "api"}, security=['auth_user', 'auth_token'])
     @api.expect(executePolicyReqModel, validate=True)
-    @policy_name_space.response(model=executePolicyResponseModel, code=201, description='Success')
+    @policy_name_space.response(model=executePolicyResponseModel, code=200, description='Success')
     @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
     @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
@@ -345,7 +349,7 @@ class PolicyRecommendations(Resource):
 
 
 @policy_name_space.route("/v1/<string:tenant_id>/recommendations/<string:recommendation_id>")
-class ViewRecommendations(Resource):
+class Recommendations(Resource):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -374,6 +378,39 @@ class ViewRecommendations(Resource):
                                   headers=headers)
             if response.status_code == 200:
                 return marshal(response.json(), policyRecommendationViewResponse), 200
+            else:
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                message["message"] = message.get("message").replace("project", "tenant")
+                return message, response_code
+        except Exception as e:
+            policy_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+    @api.doc(id="ExecuteRecommendation", name="Execute recommendation Request",
+             description='This is the api to execute recommendations for a policy violation, The recommended steps to '
+                         'resolve the violations can be executed with the help of data '
+                         'like action_name, resource_recommendation_id, will be available in Recommendation View API.'
+                         'The Recommendations can be executed with dynamic parameter which may or may not be passed '
+                         'in the input',
+             params={"tenant_id": "Specify the tenant Id to execute recommendation, this is a unique id "
+                                  "can be retrieved using the list tenant api",
+                     "recommendation_id": "This is a unique identifier for recommendation, can be obtained from the  "
+                                          "PolicyRecommendations api response"
+                     },
+             security=['auth_user', 'auth_token'])
+    @api.expect(executeRecommendationReqModel, validate=True)
+    @policy_name_space.response(model=executeRecommendationResModel, code=200, description='Success')
+    @policy_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @policy_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @policy_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def post(self, tenant_id, recommendation_id):
+        try:
+            headers = request.headers
+            args = request.args
+            format_params = {'project_id': tenant_id, "recommendation_id": recommendation_id}
+            response = invoke_api(policy_api_definition, 'execute_recommendation', format_params, args=args,
+                                  headers=headers, req_body=request.json)
+            if response.status_code == 200:
+                return marshal(response.json(), executeRecommendationResModel)
             else:
                 message, response_code = marshal(response.json(), errorModel), response.status_code
                 message["message"] = message.get("message").replace("project", "tenant")

@@ -247,9 +247,12 @@ def recommendation_action_response():
 
 def resource_recommendation_response():
     return {
-        "id": fields.String(required=True, description="unique identifier for resource recommendation"),
+        "resource_recommendation_id": fields.String(required=True,
+                                                    description="unique identifier for resource recommendation",
+                                                    attribute='id'),
         "resource_id": fields.String(required=True, description=" Resource identifier id of resource recommendation"),
-        "resource_name": fields.String(required=True, description="Resource identifier name of resource recommendation"),
+        "resource_name": fields.String(required=True,
+                                       description="Resource identifier name of resource recommendation"),
         "resource_type": fields.String(required=True, description="Type of resource"),
         "resourcegroup_location": fields.String(required=True, description="resource group location"),
         "status": fields.String(required=True, description="Status of resource recommendation")
@@ -295,7 +298,8 @@ def policy_execute_model(arguments, service_account):
         "args": fields.Nested(arguments, required=True, default={},
                               description="arguments to execute policy for example values can be in the below format "
                                           "{'listOfAllowedSKUs':['Basic_A0']} or {'requiredRetentionDays':'365',"
-                                          "'effect':'AuditIfNotExists'} etc"),
+                                          "'effect':'AuditIfNotExists'} etc.The values are dynamic in nature can "
+                                          "change from policy to policy"),
         "cloud_accounts": fields.List(fields.Nested(service_account), required=True,
                                       description="cloud account details to execute the policy")
     }
@@ -357,4 +361,26 @@ def policy_recommendations_response_list(data_model):
                                          required=True, description="Policy recommendation Info list",
                                          attribute='data.recommendations',
                                          skip_none=True),
+    }
+
+
+def execute_recommendation_req(arguments):
+    return {
+        'action_name': fields.String(required=True, description="action to perform to resolve violations, the name can"
+                                                                "be obtained from the view recommendation api"),
+        'resources': fields.List(fields.String, required=True,
+                                 description="resource resource_recommendation_id list for which the recommendation"
+                                             "will be executed, this value can be obtained from the view "
+                                             "recommendation api"),
+        "args": fields.Nested(arguments, required=False, default={},
+                              description="arguments to execute recommendation if any"
+                                          "The values are dynamic in nature can change from recommendation to "
+                                          "recommendation"),
+
+    }
+
+
+def execute_recommendation_response():
+    return {
+        'message': fields.String(required=True, description="Execute policy response message", attribute="data")
     }
