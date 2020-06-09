@@ -37,7 +37,8 @@ class ConfigManager:
 
 def getProperty(section, propertyName, defaultValue=None):
     if ConfigHolder().getConfig() is None:
-        raise ConfigNotLoadedException("Config file is not loaded properly, make sure to invoke ConfigManger before calling this.")
+        raise ConfigNotLoadedException(
+            "Config file is not loaded properly, make sure to invoke ConfigManger before calling this.")
 
     return str(ConfigHolder().getConfig().get(section, propertyName, fallback=defaultValue))
     # return str(ConfigHolder().getConfig().get(section, propertyName, fallback=defaultValue)).encode(UTF_8)

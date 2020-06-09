@@ -93,8 +93,7 @@ def inventory_resource_list_model_data():
     return {
         'tenant_id': fields.String(required=True, description="tenant_id of the resource inventory",
                                    attribute='project_id'),
-        'service_name': fields.String(required=True, description="Name of the Service",
-                                      attribute='service_name'),
+        'cloud': fields.String(required=True, description="Name of the cloud", attribute='service_name'),
         'cloud_account_id': fields.String(required=True, description="Id of the cloud account",
                                           attribute='service_account_id'),
         'cloud_account_name': fields.String(required=True, description="Inventory summary details",

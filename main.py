@@ -28,9 +28,9 @@ if __name__ == '__main__':
     # For loading the config file, take the location from command line
     # configFilePath = ['/tmp/etc/config.ini']
     # _processTemplate(sys.argv[1:])
-    # project_dir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]), os.pardir))
-    # _processTemplate(["%s/etc/config.ini" % project_dir])
+    project_dir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]), os.pardir))
+    _processTemplate(["%s/etc/config.ini" % project_dir])
     # # Load the logging related configuration ans prepare the logging.
-    # initLogManager()
+    initLogManager()
 
     app.run(host='0.0.0.0', debug=True, port=4000)
