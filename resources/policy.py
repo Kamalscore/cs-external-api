@@ -34,7 +34,7 @@ executePolicyResponseModel = api.model("PolicyExecuteResponseModel", policy_exec
 jobDetailsResponseModel = api.model("JobExecutionDetailsResponseModel", policy_job_response())
 policyRecommendationResponseModel = api.model("PolicyRecommendationResponseModel",
                                               policy_recommendation_response())
-policyRecommendationResponseList = api.model("PolicyRecommendationResponseModel",
+policyRecommendationResponseList = api.model("PolicyRecommendationResponseModelList",
                                              policy_recommendations_response_list(policyRecommendationResponseModel))
 errorModel = api.model('Error', error())
 policy_api_definition = PolicyURLDefinitions.URLInfo
