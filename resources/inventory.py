@@ -13,7 +13,8 @@ from definitions.inventory_definitions import InventoryURLDefinitions
 from models.inventory_models import inventory_filter_response, inventory_filter_data_model_list, \
     inventory_category_count_request, inventory_category_count_response, inventory_category_count_data_model_list, \
     inventory_category_count_filter_data_model, inventory_response_details, \
-    inventory_resource_request_filter_data_model, inventory_resource_request
+    inventory_resource_request_filter_data_model, inventory_resource_request, inventory_resource_list_model_data, \
+    inventory_resource_count_model_data, inventory_category_count_model_data
 from models.swagger_models import error, wild_card_model
 from utils.HelperUtils import getClassName, invoke_api
 
@@ -28,14 +29,19 @@ inventoryCountDetailsModel = api.model('CountDetailsDataModel', inventory_catego
 inventoryCategoryCountRequestModel = api.model('CategoryCountRequest',
                                                inventory_category_count_request(inventoryCountDetailsModel))
 inventoryCategoryCountDataModelList = api.model('CategoryCount', inventory_category_count_data_model_list())
-inventoryCategoryCountResponseModel = api.model('CategoryCountResponse',
-                                                inventory_category_count_response())
+inventoryCategoryResponseModelList = api.model('CategoryCountResponseModelList', inventory_category_count_model_data())
+inventoryResourceResponseModelList = api.model('ResourceCountResponseModelList', inventory_resource_count_model_data())
+inventoryCategoryCountResponseModel = api.model(
+    'CategoryCountResponse', inventory_category_count_response(inventoryCategoryResponseModelList,
+                                                               inventoryResourceResponseModelList))
 # inventory resource details
 inventoryResourceRequestModelDataList = api.model('InventoryResourceDetailsDataModel',
                                                   inventory_resource_request_filter_data_model())
 inventoryResourceRequestModel = api.model('InventoryResourceDetailsRequest',
                                           inventory_resource_request(inventoryResourceRequestModelDataList))
-inventoryResponseModel = api.model('InventoryResourceDetails', inventory_response_details())
+inventoryResourceDetailsModelList = api.model('InventoryResourceDetailsModelList', inventory_resource_list_model_data())
+inventoryResponseModel = api.model('InventoryResourceDetails',
+                                   inventory_response_details(inventoryResourceDetailsModelList))
 errorModel = api.model('Error', error())
 inventory_api_definition = InventoryURLDefinitions.URLInfo
 
