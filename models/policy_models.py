@@ -382,5 +382,5 @@ def execute_recommendation_req(arguments):
 
 def execute_recommendation_response():
     return {
-        'message': fields.String(required=True, description="Execute policy response message", attribute="data")
+        'message': fields.String(required=True, description="Execute policy response message")
     }

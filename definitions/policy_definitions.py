@@ -41,7 +41,7 @@ class PolicyURLDefinitions(object):
             method='get'
         ),
         execute_recommendation=dict(
-            path='/v1/{project_id}/recommendations/{recommendation_id}',
+            path='/v1/{project_id}/recommendations/{recommendation_id}/resolve',
             method='post'
         )
     )
