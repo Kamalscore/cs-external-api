@@ -221,10 +221,11 @@ def list_tenant(id_attribute='project_master_id'):
 
 def get_tenant_model(metadataModel):
     return {
-        'metadata': fields.Nested(metadataModel, required=True, description="metadata is a freeform JSON. It allows to store "
-                                                             "custom keys and values. It will be useful for "
-                                                             "storing information about an external applications "
-                                                             "that will refer to CoreStack tenant"),
+        'metadata': fields.Nested(metadataModel, required=True,
+                                  description="metadata is a freeform JSON. It allows to store "
+                                              "custom keys and values. It will be useful for "
+                                              "storing information about an external applications "
+                                              "that will refer to CoreStack tenant"),
         'created_by': fields.String(required=True, description="Name of the user created this tenant."),
         'updated_by': fields.String(required=True, description="Name of the user last updated this tenant."),
         'updated_at': fields.String(required=True, description="DateTime when the tenant was last updated."),
@@ -271,4 +272,21 @@ def service_acc_response(serviceAccDataModel):
         'message': fields.String(required=True, description="Response message."),
         # 'token': fields.Nested(tokenModel, required=True, description="Token."),
         'data': fields.Nested(serviceAccDataModel, required=True, description="Metadata Info."),
+    }
+
+
+def refresh_auth_token_request():
+    return {
+        "access_token": fields.String(required=True, description="access token obtained from the auth token api")
+
+    }
+
+
+def refresh_auth_token_response():
+    return {
+        "access_token": fields.String(required=True, description="access token obtained from the auth token api",
+                                      attribute='token'),
+        "message": fields.String(required=True, description="access token obtained from the auth token api",
+                                 attribute='message')
+
     }
