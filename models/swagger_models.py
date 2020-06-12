@@ -114,8 +114,8 @@ def wild_card_model():
 
 def token():
     return {
-        'issued_at': fields.String(required=True, description="DateTime when the token was issued."),
-        'expires_at': fields.String(required=True, description="DateTime when the token will expire."),
+        'issued_at': fields.String(required=True, description="DateTime in UTC when the token was issued."),
+        'expires_at': fields.String(required=True, description="Token expiry datetime in UTC."),
         'access_token': fields.String(required=True, description="This will be used as X-Auth-Token in all other "
                                                                  "APIs.", attribute='key')
         # 'refresh_token': fields.String(required=True, description="Refresh Token.")
@@ -215,7 +215,7 @@ def list_tenant(id_attribute='project_master_id'):
         'status': fields.String(required=True, description="Status of the tenant can be active or inactive. When "
                                                            "inactive no operations can be performed within that "
                                                            "tenant."),
-        'created_at': fields.String(required=True, description="Created DateTime of the tenant.")
+        'created_at': fields.String(required=True, description="Created DateTime in UTC of the tenant.")
     }
 
 
@@ -228,7 +228,7 @@ def get_tenant_model(metadataModel):
                                               "that will refer to CoreStack tenant"),
         'created_by': fields.String(required=True, description="Name of the user created this tenant."),
         'updated_by': fields.String(required=True, description="Name of the user last updated this tenant."),
-        'updated_at': fields.String(required=True, description="DateTime when the tenant was last updated."),
+        'updated_at': fields.String(required=True, description="DateTime in UTC when the tenant was last updated."),
 
         'account_name': fields.String(required=True, description="Name of the CoreStack account under which this "
                                                                  "tenant resides.", attribute='project_master_name')
@@ -284,13 +284,13 @@ def refresh_auth_token_request():
 
 def refresh_auth_token_response():
     return {
-        "issued_at": fields.String(required=True, description="Time at which the token was issued  at",
+        "access_token": fields.String(required=True, description="access token obtained from the auth token api",
+                                      attribute='token'),
+        "issued_at": fields.String(required=True, description="Time in UTC at which the token was issued  at",
                                    attribute='issued_at'),
-        "expires_at": fields.String(required=True, description="Time till which the token will be valid till",
+        "expires_at": fields.String(required=True, description="Time in UTC till which the token will be valid till",
                                     attribute='issued_at'),
         "refresh_count": fields.String(required=True, description="The count of refresh token used.It can be used"
                                                                   "for 3 max refresh count after which the token will"
-                                                                  "expired.", attribute='refresh_count'),
-        "access_token": fields.String(required=True, description="access token obtained from the auth token api",
-                                      attribute='token')
+                                                                  "expired.", attribute='refresh_count')
     }

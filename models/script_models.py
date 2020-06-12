@@ -68,10 +68,10 @@ def script_data_model_view(wild_card_model):
                                     attribute='data.parameters'),
         'created_by': fields.String(required=True, description="Name of the user who created the script.",
                                     attribute='data.created_by'),
-        'created_at': fields.String(required=True, description="Script creation time", attribute='data.created_at'),
+        'created_at': fields.String(required=True, description="Script creation time in UTC", attribute='data.created_at'),
         'updated_by': fields.String(required=True, description="Name of the user who updated the script. ",
                                     attribute='data.updated_by'),
-        'updated_at': fields.String(required=True, description="Script updation time", attribute='data.updated_at'),
+        'updated_at': fields.String(required=True, description="Script updation time in UTC", attribute='data.updated_at'),
     }
 
 

@@ -59,11 +59,11 @@ def cloud_account_response_model_view(wildcard_model):
                                        attribute="data.delete_status"),
         "created_by": fields.String(required=True, description="Name of the user who created the cloud account.",
                                     attribute="data.created_by"),
-        "created_at": fields.String(required=True, description="Cloud account creation time.",
+        "created_at": fields.String(required=True, description="Cloud account creation time in UTC.",
                                     attribute="data.created_at"),
         "updated_by": fields.String(required=True, description="Name of the user who updated the cloud account.",
                                     attribute="data.updated_by"),
-        "updated_at": fields.String(required=True, description="Cloud account updation time.",
+        "updated_at": fields.String(required=True, description="Cloud account updation time in UTC.",
                                     attribute="data.updated_at")}
 
 
