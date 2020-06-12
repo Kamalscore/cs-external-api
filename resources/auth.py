@@ -77,19 +77,16 @@ class AuthResourceRefresh(Resource):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(getClassName(AuthResourceRefresh))
 
-    @api.doc(id='RefreshToken', name="Refresh Token Request", description="This the api to refresh the already received"
-                                                                          "token in the auth token api. Refresh "
-                                                                          "Tokens are credentials used to obtain "
-                                                                          "access tokens. Refresh tokens are issued "
-                                                                          "to the client by the authorization server "
-                                                                          "and are used to obtain a new access token "
-                                                                          "when the current access token becomes "
-                                                                          "invalid or expires.Refresh tokens can also "
-                                                                          "expire but are rather long-lived. <b> "
-                                                                          "The token can be refreshed for a max 3 times"
-                                                                          " which is configured at the application "
-                                                                          "level.Needs to change the configuration to "
-                                                                          "increase or decrease the count</b>",
+    @api.doc(id='RefreshToken', name="Refresh Token Request",
+             description="Token generated in authToken API will be valid for an hour. Post that access_token will "
+                         "automatically expire. When the access_token is expired, there are two options. "
+                         "<ol> <li> use the authToken API to generate a new token </li>"
+                         "<li> use refreshToken API to extend the validity of the current token. </li> </ol>"
+                         "The refreshed token will also expire after an hour, refer to expires_at in the response for "
+                         "the validity of the token. When the refreshed token also expires, call again the "
+                         "refreshToken API to extend it further. Like wise a token can extended 3 times, "
+                         "refer to refresh_count in the response. After 3 refresh attempts, token will expire and "
+                         "cannot be extended any further. Need to use authToken API to generate a new token.",
              )
     @api.expect(RefreshTokenRequestModel, validate=True, name='refresh token')
     @auth_name_space.response(model=RefreshTokenResponseModel, code=200, description='Success')
@@ -109,7 +106,11 @@ class AuthResourceRefresh(Resource):
             if response.status_code == 200:
                 return marshal(response.json(), RefreshTokenResponseModel), 200
             else:
-                return marshal(response.json(), errorModel), response.status_code
+                message, response_code = marshal(response.json(), errorModel), response.status_code
+                if message.get("message") == "Token Expired. Please login again":
+                    message["message"] = "Token Expired and cannot be extended using refreshToken API. " \
+                                  "Use authToken API to generated a new token"
+                return message, response_code
         except KeyError as e:
             auth_name_space.abort(402, e.__doc__, status=e, statusCode="402")
         except Exception as e:
