@@ -85,7 +85,11 @@ class AuthResourceRefresh(Resource):
                                                                           "and are used to obtain a new access token "
                                                                           "when the current access token becomes "
                                                                           "invalid or expires.Refresh tokens can also "
-                                                                          "expire but are rather long-lived",
+                                                                          "expire but are rather long-lived. <b> "
+                                                                          "The token can be refreshed for a max 3 times"
+                                                                          " which is configured at the application "
+                                                                          "level.Needs to change the configuration to "
+                                                                          "increase or decrease the count</b>",
              )
     @api.expect(RefreshTokenRequestModel, validate=True, name='refresh token')
     @auth_name_space.response(model=RefreshTokenResponseModel, code=200, description='Success')
