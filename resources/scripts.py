@@ -21,17 +21,17 @@ from utils.HelperUtils import getClassName, invoke_api
 wildcardModel = api.model('Dict', wild_card_model())
 script_name_space = api.namespace(name='Scripts', path="/", description='Manage Scripts')
 scriptDataModelList = api.model('ScriptDataList', script_data_model_list())
-scriptDataModelView = api.model('ScriptDataView', script_data_model_view(wildcardModel))
+scriptDataModelView = api.model('ScriptDataView', script_data_model_view())
 scriptInfoDataModel = api.model('ScriptInfo', script_info_model())
 minimumReqDataModel = api.model('ScriptMinimumRequirements', script_minimum_requirements_model())
 scanScriptReqModel = api.model('ScriptScanRequest', script_data_model_scan(scriptInfoDataModel))
-scanResponseModel = api.model('ScanScriptResponse', script_scan_response_model(wildcardModel))
+scanResponseModel = api.model('ScanScriptResponse', script_scan_response_model())
 createScriptReqModel = api.model('CreateScriptRequest',
-                                 script_data_model_create(scriptInfoDataModel, wildcardModel, minimumReqDataModel))
-updateScriptReqModel = api.model('UpdateScriptRequest', script_data_model_create(scriptInfoDataModel, wildcardModel,
+                                 script_data_model_create(scriptInfoDataModel, minimumReqDataModel))
+updateScriptReqModel = api.model('UpdateScriptRequest', script_data_model_create(scriptInfoDataModel,
                                                                                  minimumReqDataModel))
 createUpdateResponseModel = api.model('CreateScriptResponse', script_create_update_response_model())
-executeScriptJobReqModel = api.model('ExecuteScriptJobData', script_execute_job_input_model(wildcardModel))
+executeScriptJobReqModel = api.model('ExecuteScriptJobData', script_execute_job_input_model())
 executeScriptReqModel = api.model('ExecuteScriptRequest', script_execute_request(executeScriptJobReqModel))
 executeResponseModel = api.model('ExecuteResponse', script_execute_response_model())
 scriptRemovalResModel = api.model('ScriptDeleteResponse', script_delete_response())
@@ -114,7 +114,7 @@ class Scripts(Resource):
             headers = request.headers
             response = invoke_api(script_api_definition, 'create', format_params, req_body, args=args, headers=headers)
             if response.status_code == 200:
-                return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
+                return marshal(response.json(), createUpdateResponseModel, ordered=True), 201
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
@@ -180,6 +180,8 @@ class ScriptByID(Resource):
     def put(self, tenant_id, script_id):
         try:
             req_body = marshal(request.json, createScriptReqModel, ordered=True, skip_none=True)
+            req_body['file_authentication'] = False
+            req_body['input_source'] = 'Script'
             format_params = {
                 'tenant_id': tenant_id,
                 'script_id': script_id
@@ -238,12 +240,11 @@ class ScanScript(Resource):
                          'parameter & hosts available in the script for ansible',
              security=['auth_user', 'auth_token'],
              params={
-                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
-                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'}
              }
              )
     @api.expect(scanScriptReqModel, validate=True)
-    @script_name_space.response(model=scanResponseModel, code=201, description='Scanned successfully')
+    @script_name_space.response(model=scanResponseModel, code=200, description='Scanned successfully')
     @script_name_space.response(model=errorModel, code=400, description='Bad Request')
     @script_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @script_name_space.response(model=errorModel, code=500, description='Internal Server Error')

@@ -23,7 +23,7 @@ def script_data_model_list():
     }
 
 
-def script_data_model_view(wild_card_model):
+def script_data_model_view():
     return {
         'script_id': fields.String(required=True, description="Unique Id of the script", attribute='data.id'),
         'script_name': fields.String(required=True, description="Name of the script", attribute='data.name'),
@@ -64,14 +64,17 @@ def script_data_model_view(wild_card_model):
                                      attribute='data.module_path'),
         'module_name': fields.String(required=True, description="Module path - available for puppet alone.",
                                      attribute='data.module_name'),
-        'parameters': fields.Nested(wild_card_model, required=True, description="Parameters of the script.",
-                                    attribute='data.parameters'),
+        'parameters': fields.Raw(required=True,
+                                 description="A JSON object which contains the parameters of the script.",
+                                 attribute='data.parameters'),
         'created_by': fields.String(required=True, description="Name of the user who created the script.",
                                     attribute='data.created_by'),
-        'created_at': fields.String(required=True, description="Script creation time in UTC", attribute='data.created_at'),
+        'created_at': fields.String(required=True, description="Script creation time in UTC",
+                                    attribute='data.created_at'),
         'updated_by': fields.String(required=True, description="Name of the user who updated the script. ",
                                     attribute='data.updated_by'),
-        'updated_at': fields.String(required=True, description="Script updation time in UTC", attribute='data.updated_at'),
+        'updated_at': fields.String(required=True, description="Script updation time in UTC",
+                                    attribute='data.updated_at'),
     }
 
 
@@ -109,12 +112,12 @@ def script_data_model_scan(script_info_model):
                                      enum=['chef', 'ansible', 'puppet', 'shell']),
         'script_info': fields.List(fields.Nested(script_info_model, required=True, description='script info')),
         'dependencies': fields.List(
-            fields.Nested(script_info_model, description='Details of the dependent scripts if any')),
+            fields.Nested(script_info_model, required=False, description='Details of the dependent scripts if any')),
         'playbook_yaml': fields.String(description="Playbook yaml path - mandatory for ansible scripts")
     }
 
 
-def script_data_model_create(script_info_model, wild_card_model, minimum_requirements_model):
+def script_data_model_create(script_info_model, minimum_requirements_model):
     return {
         'name': fields.String(required=True, description="Name of the script and it should be unique."),
         'uri': fields.String(description="Unique URI for script - eg: script/ansi/linux/lamp_install. "
@@ -174,7 +177,7 @@ def script_execute_request(job_input_data_model):
     }
 
 
-def script_execute_job_input_model(wild_card_model):
+def script_execute_job_input_model():
     return {
         "host": fields.String(required=True, description="Target machine's IP/DNS"),
         "username": fields.String(required=True, description="Username of the target machine"),
@@ -196,7 +199,10 @@ def script_execute_job_input_model(wild_card_model):
                                                   'the playbook tasks will be based on the hostgroups. '
                                                   'The hostgroup initialized in a playbook can be fetched from '
                                                   'scanScript API'),
-        "parameters": fields.Nested(wild_card_model, required=True, description="Parameters of the script."),
+        "parameters": fields.Raw(required=True,
+                                 description="A JSON object which contains the parameters of the script. "
+                                             "Refer scanned_parameters from scanScript/viewScript API response "
+                                             "to view parameter available and its structure"),
         "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
                                                       "or custom json", default="script", enum=["script", "json"]),
     }
@@ -209,10 +215,11 @@ def script_execute_response_model():
     }
 
 
-def script_scan_response_model(wild_card_model):
+def script_scan_response_model():
     return {
-        "scanned_parameters": fields.Nested(wild_card_model, required=True,
-                                            description="Scanned Parameters of the script.", attribute='data'),
+        "scanned_parameters": fields.Raw(required=True,
+                                         description=" A JSON object which contains the scanned parameters "
+                                                     "of the script.", attribute='data'),
         "hosts": fields.List(fields.String, required=True, description='Hosts available in the playbook if any',
                              skip_none=True)
     }
