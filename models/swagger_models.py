@@ -152,7 +152,7 @@ def tenant_request(tenantMetadataModel):
 
 class EnumStatus(enum.Enum):
     active = 'active'
-    inactive = 'inactive'
+    suspended = 'suspended'
 
 
 def tenant_update_request(tenantMetadataModel):
@@ -162,9 +162,9 @@ def tenant_update_request(tenantMetadataModel):
                                   description="metadata is freeform JSON. It allows to store custom keys and values. It will be useful for storing information about an external applications that will refer to CoreStack tenant."),
         'account_id': fields.String(required=True,
                                     description="Id of the CoreStack account under which the tenant to be updated."),
-        'status': fields.String(required=False, description="Status of the tenant can be active or inactive. When "
-                                                            "inactive no operations can be performed within that "
-                                                            "tenant.", enum=["active", "inactive"]),
+        'status': fields.String(required=False, description="Status of the tenant can be active or suspended. When "
+                                                            "suspended no operations can be performed within that "
+                                                            "tenant.", enum=["active", "suspended"]),
     }
 
 
@@ -212,8 +212,8 @@ def list_tenant(id_attribute='project_master_id'):
                                                                "resides.",
                                     attribute=id_attribute, output_key='account_id'),
 
-        'status': fields.String(required=True, description="Status of the tenant can be active or inactive. When "
-                                                           "inactive no operations can be performed within that "
+        'status': fields.String(required=True, description="Status of the tenant can be active or suspended. When "
+                                                           "suspended no operations can be performed within that "
                                                            "tenant."),
         'created_at': fields.String(required=True, description="Created DateTime in UTC of the tenant.")
     }
