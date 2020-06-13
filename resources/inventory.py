@@ -27,7 +27,7 @@ inventoryFiltersResponseModelList = api.model('InventoryResponse',
 inventoryTagsModelList = api.model('InventoryTagsModelList', inventory_tags_model_list())
 # Category count api
 inventoryCountDetailsModel = api.model('CountDetailsDataModel',
-                                       inventory_category_count_filter_data_model(inventoryTagsModelList))
+                                       inventory_category_count_filter_data_model())
 inventoryCategoryCountRequestModel = api.model('CategoryCountRequest',
                                                inventory_category_count_request(inventoryCountDetailsModel))
 inventoryCategoryCountDataModelList = api.model('CategoryCount', inventory_category_count_data_model_list())
@@ -38,7 +38,7 @@ inventoryCategoryCountResponseModel = api.model(
                                                                inventoryResourceResponseModelList))
 # inventory resource details
 inventoryResourceRequestModelDataList = api.model('InventoryResourceDetailsDataModel',
-                                                  inventory_resource_request_filter_data_model(inventoryTagsModelList))
+                                                  inventory_resource_request_filter_data_model())
 inventoryResourceRequestModel = api.model('InventoryResourceDetailsRequest',
                                           inventory_resource_request(inventoryResourceRequestModelDataList))
 inventoryResourceDetailsModelList = api.model('InventoryResourceDetailsModelList', inventory_resource_list_model_data())
