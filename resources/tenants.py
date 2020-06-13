@@ -116,12 +116,9 @@ class TenantResourceById(Resource):
             if response.status_code == 200:
                 t = response.json()
                 t = t.pop('data', {})
-                # t.pop('status', None)
-                # t.pop('message', None)
-                # t.pop('claas_metadata', None)
-                # t['account_name'] = t.pop('project_master_name', None)
-                # t['account_id'] = t.pop('project_master_id', None)
-                return custom_marshal(t, getResponseModel, ordered=True, output_key_enabled=True), 200
+                rJson = marshal(t, getResponseModel, ordered=True)
+                rJson['metadata'] = t['metadata']
+                return rJson, 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:

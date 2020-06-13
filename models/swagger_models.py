@@ -137,7 +137,7 @@ def tenant_request(tenantMetadataModel):
                                                          '2-50 characters. Special characters \' " # ? / \ are '
                                                          'not allowed.'),
         'description': fields.String(required=True, description="Description of the new tenant to be created."),
-        'metadata': fields.Nested(tenantMetadataModel, required=True, description="metadata is a freeform JSON. "
+        'metadata': fields.Nested(tenantMetadataModel, description="metadata is a freeform JSON. "
                                                                                   "It allows to store custom keys "
                                                                                   "and values. It will be useful "
                                                                                   "for storing information about "
