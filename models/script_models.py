@@ -85,7 +85,8 @@ def script_response_list(script_data_model):
         'total_pages': fields.String(required=True, description="Total number of pages",
                                      attribute='data.page_count'),
         'scripts': fields.Nested(script_data_model,
-                                 required=True, description="Scripts List.",
+                                 required=True,
+                                 description="Scripts List.",
                                  attribute='data.scripts',
                                  skip_none=True)
     }
@@ -128,7 +129,17 @@ def script_data_model_create(script_info_model, minimum_requirements_model):
                                 "Others"]), required=True, description="Script Category"),
         'platform': fields.List(fields.String(enum=["linux", "windows"]), required=True,
                                 description="Platforms supported by script."),
-        'operating_system': fields.List(fields.String(enum=['ubuntu', 'centos', 'fedora', 'redhat', 'windows']),
+        'operating_system': fields.List(fields.String(enum=["centos",
+                                                            "ubuntu",
+                                                            "Win-2008(Server)",
+                                                            "Win-2012(Server)",
+                                                            "redhat",
+                                                            "fedora",
+                                                            "debian",
+                                                            "Win-2016(Server)",
+                                                            "Win-7(Desktop)",
+                                                            "Win-8(Desktop)"
+                                                            ]),
                                         required=True, description="OS supported by script"),
         'config_type': fields.String(required=True, description="Config type of the script. "
                                                                 "Create is supported for ansible type scripts alone for now",
@@ -202,7 +213,14 @@ def script_execute_job_input_model():
         "parameters": fields.Raw(required=True,
                                  description="A JSON object which contains the parameters of the script. "
                                              "Refer scanned_parameters from scanScript/viewScript API response "
-                                             "to view parameter available and its structure"),
+                                             "to view parameter available."
+                                             " Parameter JSON should be as follows."
+                                             "{\"<script_name_as_available_in_path>\": "
+                                             "{\"parameter_key\" : \"parameter_value\"},"
+                                             "\"<dependent_script_name_as_available_in_path>\": "
+                                             "{\"parameter_key\" : \"parameter_value\"}}. \n"
+                                             "For Eg.{\"ansible_lamp\": {\"mysql_port\" : \"3307\"}}",
+                                 example={"ansible_lamp": {"mysql_port" : "3307"}}),
         "parameter_source": fields.String(description="Parameter source - whether as per the one defined in script "
                                                       "or custom json", default="script", enum=["script", "json"]),
     }
