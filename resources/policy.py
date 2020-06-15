@@ -59,7 +59,7 @@ class PolicyResource(Resource):
 
     @api.doc(id="CreatePolicy", name="CreatePolicy Request",
              description='Creates a new policy under the tenant which will generate a unique policy id in the response'
-                         'this is can be used to describe details about the policy, update policy, execute or delete '
+                         ' this is can be used to describe details about the policy, update policy, execute or delete '
                          'policy. However the policy will be accessible based on its  '
                          'scope  Account scope - All users under that account will have access to describe and '
                          'execute. Only Account admins can update/delete. Tenant - Users with access to the specific '
