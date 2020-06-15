@@ -5,6 +5,8 @@ from flask_restplus import Resource, marshal
 
 from app import api
 from client import get_token
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
+    CS_ENDPOINT_URL_PROPERTY_NAME
 from definitions.auth_definitions import AuthURLDefinitions
 from models.swagger_models import auth_request, auth_response, token, error, auth_tenant_model, user_timezone_model, \
     auth_user_model, refresh_auth_token_request, refresh_auth_token_response
@@ -101,8 +103,10 @@ class AuthResourceRefresh(Resource):
             headers = request.headers
             args = request.args
             format_params = {}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(auth_api_definition, 'refresh_token', format_params, args=args,
-                                  headers=headers, req_body=t)
+                                  headers=headers, req_body=t, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), RefreshTokenResponseModel), 200
             else:

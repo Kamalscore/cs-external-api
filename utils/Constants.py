@@ -9,5 +9,6 @@ UTF_8 = 'utf-8'
 
 WEB_CONFIG_SECTION = 'WEBConfig'
 CS_ENDPOINT_URL_DEFAULT_VALUE = 'http://localhost:18080'
+CS_ENDPOINT_URL_PROPERTY_NAME = 'corestack.endpoint.url'
 CS_INVENTORY_ENDPOINT_URL_PROPERTY_NAME = 'inventory.endpoint.url'
 CS_IDENTITY_ENDPOINT_URL_PROPERTY_NAME = 'identity.endpoint.url'

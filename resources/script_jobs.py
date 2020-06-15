@@ -9,6 +9,8 @@ from flask import request
 from flask_restplus import Resource, marshal
 
 from app import api
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
+    CS_ENDPOINT_URL_PROPERTY_NAME
 from definitions.script_job_definitions import ScripJobURLDefinitions
 from models.script_job_models import script_job_job_info_model, script_job_script_info_data_model, \
     script_job_view_model, script_job_list_model, script_job_list_response
@@ -51,7 +53,10 @@ class DescribeScriptJob(Resource):
             headers = request.headers
             args = request.args
             format_params = {'tenant_id': tenant_id}
-            response = invoke_api(script_job_api_definition, 'list', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_job_api_definition, 'list', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), scriptJobResponseModelList, ordered=True), 200
             else:
@@ -84,7 +89,10 @@ class DescribeScriptJob(Resource):
             headers = request.headers
             args = request.args
             format_params = {'tenant_id': tenant_id, 'script_job_id': script_job_id}
-            response = invoke_api(script_job_api_definition, 'view', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_job_api_definition, 'view', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), scriptJobDataModelView, ordered=True), 200
             else:

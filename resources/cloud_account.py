@@ -15,6 +15,8 @@ from models.service_account_models import aws_cloud_account_auth_values_model, c
     cloud_account_dependency_data_model, dependency_metadata_model
 from models.swagger_models import error
 from utils.HelperUtils import getClassName
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
+    CS_ENDPOINT_URL_PROPERTY_NAME
 from utils.HelperUtils import invoke_api
 
 cloud_account_name_space = api.namespace(name='CloudAccounts', path="/",
@@ -86,8 +88,10 @@ class CloudAccountResource(Resource):
             # Service Azure
             if service == "Azure":
                 req_body.update(cloud_type="Azure_Global")
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'create', args=request.args, headers=request.headers,
-                                  format_params=format_params, req_body=req_body)
+                                  format_params=format_params, base_url=base_url, req_body=req_body)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountCreateResponse), 201
             else:
@@ -111,8 +115,10 @@ class CloudAccountResource(Resource):
             format_params = {
                 'tenant_id': tenant_id
             }
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'list', args=args, headers=request.headers,
-                                  format_params=format_params)
+                                  format_params=format_params, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountListResponse), 200
             else:
@@ -140,8 +146,10 @@ class CloudAccountResourceById(Resource):
                 'tenant_id': tenant_id,
                 'service_account_id': cloud_account_id
             }
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'view', headers=request.headers,
-                                  format_params=format_params)
+                                  format_params=format_params, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountDescribeResponse), 200
             else:
@@ -182,8 +190,10 @@ class CloudAccountResourceById(Resource):
             # Service Azure
             if service == "Azure":
                 req_body.update(cloud_type="Azure_Global")
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'update', args=request.args, headers=request.headers,
-                                  format_params=format_params, req_body=req_body)
+                                  format_params=format_params, base_url=base_url, req_body=req_body)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountUpdateResponse), 200
             else:
@@ -207,8 +217,10 @@ class CloudAccountResourceById(Resource):
                 'tenant_id': tenant_id,
                 'service_account_id': cloud_account_id
             }
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'delete', headers=request.headers,
-                                  format_params=format_params)
+                                  format_params=format_params, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountDeleteResponse), 200
             else:
@@ -239,8 +251,10 @@ class CloudAccountRediscover(Resource):
                 'tenant_id': tenant_id
             }
             args = {"account_id": cloud_account_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'rediscover', headers=request.headers,
-                                  format_params=format_params, args=args)
+                                  format_params=format_params, base_url=base_url, args=args)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountRediscoverResponse), 200
             else:
@@ -268,8 +282,10 @@ class CloudAccountTransaction(Resource):
                 'tenant_id': tenant_id,
                 'service_account_id': cloud_account_id
             }
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(service_account_api_defn, 'list_dependency', headers=request.headers,
-                                  format_params=format_params)
+                                  format_params=format_params, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountDependencyResponse), 200
             else:

@@ -32,8 +32,15 @@ if __name__ == '__main__':
     # For loading the config file, take the location from command line
     # configFilePath = ['/tmp/etc/config.ini']
     # _processTemplate(sys.argv[1:])
-    project_dir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]), os.pardir))
-    _processTemplate(["%s/etc/config.ini" % project_dir])
+
+    # load from etc
+    if os.path.exists('/etc/cs-external-api/cs-external-api.ini'):
+        config_path = '/etc/cs-external-api/cs-external-api.ini'
+    # else load default
+    else:
+        project_dir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]), os.pardir))
+        config_path = "%s/etc/config.ini" % project_dir
+    _processTemplate([config_path])
     # # Load the logging related configuration ans prepare the logging.
     initLogManager()
 

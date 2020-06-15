@@ -8,6 +8,8 @@ from flask import request
 from flask_restplus import Resource, marshal
 
 from app import api
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
+    CS_ENDPOINT_URL_PROPERTY_NAME
 from definitions.policy_definitions import PolicyURLDefinitions
 from models.policy_models import policy_delete_response, policy_create_model, create_policy_data_model, \
     policy_view_response, policy_metadata_model, policy_update_response, policy_update_model, policy_data_model_list, \
@@ -81,7 +83,10 @@ class PolicyResource(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'create', format_params, args=args, headers=headers,
+                                  base_url=base_url,
                                   req_body=t)
             if response.status_code == 200:
                 return marshal(response.json(), create_policy_data_model)
@@ -118,7 +123,10 @@ class PolicyResource(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id}
-            response = invoke_api(policy_api_definition, 'list', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(policy_api_definition, 'list', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), PolicyResponseModelList)
             else:
@@ -152,7 +160,10 @@ class PolicyResourceById(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "policy_id": policy_id}
-            response = invoke_api(policy_api_definition, 'view', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(policy_api_definition, 'view', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), PolicyViewResponse), 200
             else:
@@ -184,7 +195,10 @@ class PolicyResourceById(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "policy_id": policy_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'update', format_params, args=args, headers=headers,
+                                  base_url=base_url,
                                   req_body=t)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
@@ -211,7 +225,10 @@ class PolicyResourceById(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "policy_id": policy_id}
-            response = invoke_api(policy_api_definition, 'delete', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(policy_api_definition, 'delete', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), PolicyRemovalResModel), 200
@@ -258,7 +275,10 @@ class PolicyActionsByName(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, 'policy_id': policy_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'execute', format_params, args=args, headers=headers,
+                                  base_url=base_url,
                                   req_body=t)
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
@@ -294,7 +314,10 @@ class PolicyJobs(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "job_id": job_id}
-            response = invoke_api(policy_api_definition, 'job_details', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(policy_api_definition, 'job_details', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), jobDetailsResponseModel), 200
             else:
@@ -336,8 +359,10 @@ class PolicyRecommendations(Resource):
                 t = args.pop("cloud_account_id")
                 args["service_account_id"] = t
             format_params = {'project_id': tenant_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'policy_recommendations', format_params, args=args,
-                                  headers=headers)
+                                  headers=headers, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), policyRecommendationResponseList), 200
             else:
@@ -374,8 +399,10 @@ class Recommendations(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "recommendation_id": recommendation_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'recommendation_view', format_params, args=args,
-                                  headers=headers)
+                                  headers=headers, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), policyRecommendationViewResponse), 200
             else:
@@ -407,8 +434,10 @@ class Recommendations(Resource):
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, "recommendation_id": recommendation_id}
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
             response = invoke_api(policy_api_definition, 'execute_recommendation', format_params, args=args,
-                                  headers=headers, req_body=request.json)
+                                  headers=headers, base_url=base_url, req_body=request.json)
             if response.status_code == 200:
                 return marshal(response.json(), executeRecommendationResModel)
             else:
