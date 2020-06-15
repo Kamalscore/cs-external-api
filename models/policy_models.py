@@ -307,10 +307,13 @@ def policy_execute_model(arguments, service_account):
 
 def service_account_details():
     return {
-        'cloud': fields.String(required=True, description="The cloud name of the account for which the policy"
-                                                          "will be executed ex: Azure, AWS etc"),
+        'cloud': fields.String(required=False, description="The cloud name of the account for which the policy"
+                                                           "will be executed ex: Azure, AWS etc"),
         "cloud_account_id": fields.String(required=True, description="Identifier of the cloud account on boarded in "
-                                                                     "the on boarding section")
+                                                                     "the on boarding section"),
+        "region": fields.String(required=False, description="The region of the service account where it needs to be"
+                                                            "executed, if this is not provided the script will execute"
+                                                            "for all the region")
     }
 
 

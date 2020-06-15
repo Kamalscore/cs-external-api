@@ -251,7 +251,10 @@ class PolicyActionsByName(Resource):
             cloud_account = dict()
             for cloud in cloud_accounts:
                 cloud_account["service_type"] = "Cloud"
-                cloud_account["service_name"] = cloud["cloud"]
+                if cloud.get("cloud"):
+                    cloud_account["service_name"] = cloud.get("cloud")
+                if cloud.get("region"):
+                    cloud_account["region"] = cloud.get("region")
                 cloud_account["id"] = cloud["cloud_account_id"]
                 cloud_account_list.append(cloud_account)
             t["service_accounts"] = cloud_account_list
@@ -333,8 +336,9 @@ class PolicyRecommendations(Resource):
         try:
             headers = request.headers
             args = request.args.to_dict()
-            t = args.pop("cloud_account_id")
-            args["service_account_id"] = t
+            if args.get("cloud_account_id"):
+                t = args.pop("cloud_account_id")
+                args["service_account_id"] = t
             format_params = {'project_id': tenant_id}
             response = invoke_api(policy_api_definition, 'policy_recommendations', format_params, args=args,
                                   headers=headers)
