@@ -11,9 +11,6 @@ def role_list_data():
                                                             "in the CoreStack system", attribute="id"),
         "role_name": fields.String(required=True, description="Rolename is unique in the CoreStack system for a "
                                                               "specific tenant.", attribute="name"),
-        "access": fields.List(fields.String(required=True, description="Access assigned to this specific role"),
-                              required=True, description="List of access assigned to this specific role.",
-                              attribute="access"),
         "category": fields.String(required=True, description="Category of the specific role.Either default or custom",
                                   attribute="category")
     }

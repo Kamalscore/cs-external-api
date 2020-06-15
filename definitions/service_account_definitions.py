@@ -22,11 +22,17 @@ class ServiceAccountUrlDefinitions(object):
         ),
         delete=dict(
             path='/v1/{tenant_id}/serviceaccounts/{service_account_id}',
-            method='delete'
+            method='delete',
+            query_params=dict(action="delete")
         ),
         rediscover=dict(
             path='/v1/{tenant_id}/serviceaccounts',
             method='get',
             query_params=dict(type='re-discover', action='sync')
+        ),
+        list_dependency=dict(
+            path='/v1/{tenant_id}/serviceaccounts/{service_account_id}',
+            method='delete',
+            query_params=dict(action="list")
         )
     )

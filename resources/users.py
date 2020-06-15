@@ -16,7 +16,8 @@ from models.swagger_models import error
 from models.user_models import list_user_response_model, list_user_data, list_roles, list_role_assignment, \
     describe_user_response_model, user_delete_response_model, user_create_response_model, user_create_request_model, \
     add_role_assignment, user_update_request_model, change_password_request_model, change_timezone_request_model, \
-    change_timezone_response_model, update_role_assignment, user_update_response_model, change_password_response_model
+    change_timezone_response_model, update_role_assignment, user_update_response_model, change_password_response_model,\
+    change_timezone_data_model
 from utils.HelperUtils import getClassName
 from utils.HelperUtils import invoke_api
 from utils.HelperUtils import request_marshal
@@ -38,7 +39,8 @@ UserUpdateRequest = api.model('UserUpdateRequest', user_update_request_model(Upd
 ChangePasswordRequest = api.model('ChangePasswordRequest', change_password_request_model())
 ChangePasswordResponse = api.model('ChangePasswordResponse', change_password_response_model())
 ChangeTimezoneRequest = api.model('ChangeTimezoneRequest', change_timezone_request_model())
-ChangeTimezoneResponse = api.model('ChangeTimezoneResponse', change_timezone_response_model())
+ChangeTimezoneData = api.model('ChangeTimezoneData', change_timezone_data_model())
+ChangeTimezoneResponse = api.model('ChangeTimezoneResponse', change_timezone_response_model(ChangeTimezoneData))
 
 errorModel = api.model('Error', error())
 
@@ -197,8 +199,7 @@ class UserResourceById(Resource):
             user_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="DeleteUser", name="DeleteUser",
-             description="Deletes the User from CoreStack system. This operation cannot be undone. Use updateUser to "
-                         "make user as inactive if the user has to be temporarily suspended",
+             description="Deletes the User from CoreStack system. This operation cannot be undone.",
              security=['auth_user', 'auth_token']
              )
     @user_name_space.response(model=UserDeleteResponse, code=200, description='Success')

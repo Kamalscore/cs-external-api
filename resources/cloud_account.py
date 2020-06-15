@@ -11,7 +11,8 @@ from definitions.service_account_definitions import ServiceAccountUrlDefinitions
 from models.service_account_models import aws_cloud_account_auth_values_model, cloud_account_request_model, \
     cloud_account_create_response_model, cloud_account_dependency_response_model, cloud_account_delete_response_model, \
     wild_card_model, azure_cloud_account_auth_values_model, cloud_account_response_model_list, \
-    cloud_account_data_model_list, cloud_account_response_model_view, cloud_account_rediscover_response
+    cloud_account_data_model_list, cloud_account_response_model_view, cloud_account_rediscover_response, \
+    cloud_account_dependency_data_model, dependency_metadata_model
 from models.swagger_models import error
 from utils.HelperUtils import getClassName
 from utils.HelperUtils import invoke_api
@@ -32,13 +33,16 @@ CloudAccountCreateRequest = api.model('CloudAccountCreateRequest',
 AWSCloudAccountUpdateRequest = api.model('CloudAccountUpdateRequest',
                                          cloud_account_request_model(AWSCloudAccountAuthValues))
 AzureCloudAccountAuthValues = api.model('AzureCloudAccountAuthValues',
-                                        azure_cloud_account_auth_values_model(), for_doc_alone=True)
+                                        azure_cloud_account_auth_values_model())
 CloudAccountCreateResponse = api.model('CloudAccountCreateResponse', cloud_account_create_response_model())
 CloudAccountUpdateResponse = api.model('CloudAccountUpdateResponse', cloud_account_create_response_model())
 CloudAccountDeleteResponse = api.model('CloudAccountDeleteResponse', cloud_account_delete_response_model())
+CloudAccountDependencyMetadata = api.model('CloudAccountDependencyMetadata', dependency_metadata_model())
+CloudAccountDependency = api.model('CloudAccountDependency',
+                                   cloud_account_dependency_data_model(CloudAccountDependencyMetadata))
 CloudAccountDependencyResponse = api.inherit('CloudAccountDependencyResponse',
                                              CloudAccountDeleteResponse,
-                                             cloud_account_dependency_response_model(WildCardModel))
+                                             cloud_account_dependency_response_model(CloudAccountDependency))
 CloudAccountRediscoverResponse = api.model('CloudAccountRediscoverResponse',
                                            cloud_account_rediscover_response())
 service_account_api_defn = ServiceAccountUrlDefinitions.URLInfo
@@ -51,15 +55,9 @@ class CloudAccountResource(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResource))
 
     @api.doc(id="CreateCloudAccount", name="CreateCloudAccount",
-             description="Create a cloud account for a specific service for a given tenant. \
-                         Service implies any Cloud platform that is integrated with CoreStack.The specified auth values\
-                         should be passed based on the cloud service.Below\
-                         mentioned auth_values in the request model is to create AWS Cloud account.",
-             security=['auth_user', 'auth_token'],
-             params={"cloud": {"description": "Available cloud services.It is a mandatory parameter.", "in": "query",
-                               "type": "str",
-                               "enum": ["AWS"]}
-                     })
+             description="Creates an AWS cloud account for a given tenant.",
+             security=['auth_user', 'auth_token']
+             )
     @api.expect(CloudAccountCreateRequest, validate=False)
     @cloud_account_name_space.response(model=CloudAccountCreateResponse, code=201, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -70,10 +68,9 @@ class CloudAccountResource(Resource):
             format_params = {
                 'tenant_id': tenant_id
             }
-            service = request.args.get("cloud")
-            if not service:
-                return marshal({"message": "Cloud is mandatory."}, errorModel), 400
             req_body = request.json
+            # FIXME Currently supporting AWS cloud account
+            service = "AWS"
             if not req_body:
                 return marshal({"message": "Missing request payload."}, errorModel), 400
             req_body.update(service=service, service_type="Cloud", settings="none")
@@ -92,7 +89,7 @@ class CloudAccountResource(Resource):
             response = invoke_api(service_account_api_defn, 'create', args=request.args, headers=request.headers,
                                   format_params=format_params, req_body=req_body)
             if response.status_code == 200:
-                return marshal(response.json(), CloudAccountCreateResponse), 200
+                return marshal(response.json(), CloudAccountCreateResponse), 201
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
@@ -100,20 +97,17 @@ class CloudAccountResource(Resource):
 
     @api.doc(id="ListCloudAccounts", name="ListCloudAccounts",
              description='List all cloud accounts for a given tenant.',
-             security=['auth_user', 'auth_token'],
-             params={"cloud": {"description": "Available cloud services", "in": "query", "type": "str",
-                               "enum": ["AWS"], "default": ""}
-                     })
+             security=['auth_user', 'auth_token']
+             )
     @cloud_account_name_space.response(model=CloudAccountListResponse, code=200, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
     @cloud_account_name_space.response(model=errorModel, code=401, description='Unauthorized')
     @cloud_account_name_space.response(model=errorModel, code=500, description='Internal Server Error')
     def get(self, tenant_id):
         try:
-            if not request.args.get("cloud"):
-                args = {"service_type": "Cloud"}
-            else:
-                args = {"services": request.args.get('cloud')}
+            # FIXME Currently supporting only AWS cloud account
+            args = {"service_type": "Cloud",
+                    "services": "AWS"}
             format_params = {
                 'tenant_id': tenant_id
             }
@@ -156,14 +150,9 @@ class CloudAccountResourceById(Resource):
             cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
-             description="Update cloud account with specified value for the service for a given tenant.The specified auth values\
-                         should be passed based on the cloud service.Below\
-                         mentioned auth_values in the request model is for AWS Cloud account.",
-             security=['auth_user', 'auth_token'],
-             params={"cloud": {"description": "Available cloud services.It is a mandatory parameter.", "in": "query",
-                               "type": "str",
-                               "enum": ["AWS"]}
-                     })
+             description="Update the existing AWS cloud account with specified value for a given tenant.",
+             security=['auth_user', 'auth_token']
+             )
     @api.expect(AWSCloudAccountUpdateRequest, validate=True)
     @cloud_account_name_space.response(model=CloudAccountUpdateResponse, code=200, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -175,9 +164,8 @@ class CloudAccountResourceById(Resource):
                 'tenant_id': tenant_id,
                 'service_account_id': cloud_account_id
             }
-            service = request.args.get("cloud")
-            if not service:
-                return marshal({"message": "Cloud is mandatory."}, errorModel), 400
+            # FIXME Currently supporting only AWS cloud account
+            service = "AWS"
             req_body = request.json
             if not req_body:
                 return marshal({"message": "Missing request payload."}, errorModel), 400
@@ -197,24 +185,18 @@ class CloudAccountResourceById(Resource):
             response = invoke_api(service_account_api_defn, 'update', args=request.args, headers=request.headers,
                                   format_params=format_params, req_body=req_body)
             if response.status_code == 200:
-                return marshal(response.json(), CloudAccountUpdateResponse), 201
+                return marshal(response.json(), CloudAccountUpdateResponse), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
             cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="DeleteCloudAccount", name="DeleteCloudAccount",
-             description="Delete a specific cloud account and all its dependencies for a given tenant.Based on the"
-                         " dependencies, cloud account delete might take sometime.",
-             security=['auth_user', 'auth_token'],
-             params={"action": {"description": "Action to delete a Cloud account.Before deleting a cloud account, "
-                                               "dependencies has to be listed using action 'list'. "
-                                               "It is a mandatory parameter.: Below "
-                                               "mentioned Response model is obtained when the "
-                                               "action is 'list'.", "in": "query", "type": "str",
-                                "enum": ["list", "delete"]}
-                     })
-    @cloud_account_name_space.response(model=CloudAccountDependencyResponse, code=200, description='Success')
+             description="Delete a specific cloud account.In order to delete, CoreStack enforces you to list all the "
+                         "transactional data(Refer: CheckDependency API) associated with this cloud account."
+                         "This is done to ensure that you do not loose any data that is critical for your business "
+                         "needs.",
+             security=['auth_user', 'auth_token'])
     @cloud_account_name_space.response(model=CloudAccountDeleteResponse, code=200, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
     @cloud_account_name_space.response(model=errorModel, code=401, description='Unauthorized')
@@ -225,14 +207,10 @@ class CloudAccountResourceById(Resource):
                 'tenant_id': tenant_id,
                 'service_account_id': cloud_account_id
             }
-            action = request.args.get("action")
-            if not action:
-                return marshal({"message": "Action is mandatory."}, errorModel), 400
             response = invoke_api(service_account_api_defn, 'delete', headers=request.headers,
-                                  format_params=format_params, args=request.args)
+                                  format_params=format_params)
             if response.status_code == 200:
-                return marshal(response.json(),
-                               CloudAccountDependencyResponse if action == "list" else CloudAccountDeleteResponse), 200
+                return marshal(response.json(), CloudAccountDeleteResponse), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
@@ -265,6 +243,35 @@ class CloudAccountRediscover(Resource):
                                   format_params=format_params, args=args)
             if response.status_code == 200:
                 return marshal(response.json(), CloudAccountRediscoverResponse), 200
+            else:
+                return marshal(response.json(), errorModel), response.status_code
+        except Exception as e:
+            cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
+
+
+@cloud_account_name_space.route("/v1/<string:tenant_id>/cloud_accounts/<string:cloud_account_id>/check_dependency")
+class CloudAccountTransaction(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(getClassName(CloudAccountTransaction))
+
+    @api.doc(id="CheckDependency", name="CheckDependency",
+             description="To get all the transactional data associated with the cloud account.",
+             security=['auth_user', 'auth_token'])
+    @cloud_account_name_space.response(model=CloudAccountDependencyResponse, code=200, description='Success')
+    @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
+    @cloud_account_name_space.response(model=errorModel, code=401, description='Unauthorized')
+    @cloud_account_name_space.response(model=errorModel, code=500, description='Internal Server Error')
+    def get(self, tenant_id, cloud_account_id):
+        try:
+            format_params = {
+                'tenant_id': tenant_id,
+                'service_account_id': cloud_account_id
+            }
+            response = invoke_api(service_account_api_defn, 'list_dependency', headers=request.headers,
+                                  format_params=format_params)
+            if response.status_code == 200:
+                return marshal(response.json(), CloudAccountDependencyResponse), 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:

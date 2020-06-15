@@ -32,7 +32,7 @@ class RoleResource(Resource):
         self.logger = logging.getLogger(getClassName(RoleResource))
 
     @api.doc(id="ListRoles", name="ListRoles",
-             description="This GET method is used to fetch the list of Roles available within a specific tenant.",
+             description="This GET method is used to retrieve the list of Roles available within a specific tenant.",
              security=['auth_user', 'auth_token']
              )
     @role_name_space.response(model=RoleListResponse, code=200, description='Success')

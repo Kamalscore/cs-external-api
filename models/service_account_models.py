@@ -8,7 +8,6 @@ def cloud_account_response_model_list(cloud_account_data):
     return {
         "total_count": fields.Integer(required=True, description="Number of CloudAccounts",
                                       attribute="data.total_count"),
-        "page_count": fields.Integer(required=True, description="Number of Pages", attribute="data.page_count"),
         "cloud_accounts": fields.Nested(cloud_account_data, required=True, description="Metadata Info.",
                                         attribute="data.cloud_and_tool_accounts")
     }
@@ -128,10 +127,28 @@ def wild_card_model():
     return {'*': fields.Wildcard(fields.Raw)}
 
 
-def cloud_account_dependency_response_model(wild_card_model):
-    return {"dependency": fields.Nested(wild_card_model, required=True, description="Dependency Info.",
+def dependency_metadata_model():
+    return {
+        "total": fields.Integer(required=True, description="Total number of transaction associated with the account.",
+                                attribute="total"),
+        "owned_by_me": fields.Integer(required=True, description="Number of self owned transaction associated with the"
+                                                                 " account.",
+                                attribute="owned_by_me"),
+        "status": fields.String(required=True, description="Delete status of each transaction.", attribute="status")
+    }
+
+
+def cloud_account_dependency_data_model(dependency_metadata_model):
+    return {
+        "*": fields.Nested(dependency_metadata_model, required=True, description="Transactional data details.")
+    }
+
+
+def cloud_account_dependency_response_model(dependency_data_model):
+    return {"dependency": fields.Nested(dependency_data_model, required=True, description="List of transactional data.",
                                         attribute="data.dependency"),
-            "delete_status": fields.String(required=True, description="Delete Status", attribute="data.delete_status")
+            "overall_status": fields.String(required=True, description="Overall delete status of the cloud account.",
+                                            attribute="data.delete_status")
             }
 
 
