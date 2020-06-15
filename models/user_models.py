@@ -105,10 +105,10 @@ def describe_user_response_model(roles_assignment_data):
                                     attribute="data.sso_userid"),
         "account_id": fields.String(require=True,
                                     description="ID of the Account in CoreStack. It will be available in the authToken"
-                                                " API repsonse",
+                                                " API response",
                                     attribute="data.project_master_id"),
         "is_accesskey_available": fields.Boolean(require=True,
-                                                 description="Is Access Key generated for this user",
+                                                 description="Is Access Key available for this user.",
                                                  attribute="data.require_access_key")
     }
 
@@ -129,20 +129,21 @@ def user_create_request_model(add_role_assignment):
         "password": fields.String(required=True, description="Password length must be of 8-15 characters with at least "
                                                              "one special character(_$^@*!#&.), one number and starting"
                                                              " character must be an alphabet"),
-        "email": fields.String(required=True, description="Email ID of the user. This wil be unique across all the the"
+        "email": fields.String(required=True, description="Email ID of the user. This wil be unique across all the"
                                                           " CoreStack accounts"),
         "timezone_id": fields.String(required=True,
                                      description="ID of the timezone to be set for th user. For a valid list of "
                                                  "timezone values to use, please refer "
                                                  "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"),
         "account_id": fields.String(required=True, description="ID of the Account in CoreStack. It will be available "
-                                                               "in the authToken API repsonse"),
+                                                               "in the authToken API response"),
         "first_name": fields.String(required=False, description="First Name of the user. It can be only alphanumeric"),
         "last_name": fields.String(required=False, description="Last Name of the user. It can be only alphanumeric"),
         "role_assignment": fields.List(fields.Nested(add_role_assignment), required=True,
                                        description="List of roles assignments for the user. The same user can be "
                                                    "assigned different roles in different tenants"),
-        "is_accesskey_required": fields.Boolean(required=False, description="Is Access Key generated for this user",
+        "is_accesskey_required": fields.Boolean(required=False, description="Is Access Key to be generated for this "
+                                                                            "user",
                                                 default=False)
     }
 
@@ -165,13 +166,13 @@ def update_role_assignment():
 
 def user_create_response_model():
     return {
-        "user_id": fields.String(required=True, description="IdD of the newly created User", attribute="data.id")
+        "user_id": fields.String(required=True, description="ID of the newly created User", attribute="data.id")
     }
 
 
 def user_update_request_model(add_role_assignment):
     return {
-        "email": fields.String(required=True, description="Email ID of the user. This wil be unique across all the the"
+        "email": fields.String(required=True, description="Email ID of the user. This wil be unique across all the"
                                                           " CoreStack accounts"),
         "first_name": fields.String(required=False, description="First Name of the user. It can be only alphanumeric"),
         "last_name": fields.String(required=False, description="Last Name of the user. It can be only alphanumeric"),
@@ -224,9 +225,20 @@ def change_timezone_request_model():
     }
 
 
-def change_timezone_response_model():
+def change_timezone_data_model():
     return {
-        "timezone": fields.String(required=True,
+        "raw_offset": fields.String(required=True, description="Raw offset of the timezone. It means the amount of time"
+                                                               " in milliseconds to add to UTC to get standard time in"
+                                                               " the required time zone",
+                                    attribute="raw_offset"),
+        "id": fields.String(required=True, description="ID of the Timezone such as Asia/Kolkata, Asia/Dubai and so on",
+                            attribute="id")
+    }
+
+
+def change_timezone_response_model(change_timezone_data_model):
+    return {
+        "timezone": fields.Nested(change_timezone_data_model, required=True,
                                   description="Contains information about the timezone set for the user. "
                                               "Raw offset of the timezone. It means the amount of time in milliseconds "
                                               "to add to UTC to get standard time in the required time zone. Id of the "
