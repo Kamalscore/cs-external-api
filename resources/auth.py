@@ -44,10 +44,10 @@ class AuthResource(Resource):
     @api.doc(id='authToken', name="Auth Request",
              description="CoreStack requires Auth token to be passed in all the API headers. "
                          "Auth token has to be generated and it is valid only for an hour. New "
-                         "token can be generated using this API.<br><br>Extract <b>Auth-token, "
+                         "token can be generated using this API. Extract Auth-token, "
                          "Tenant "
-                         "Id & Account Id</b> from the response. This will be required in most of "
-                         "the API calls</br>")
+                         "Id & Account Id from the response. This will be required in most of "
+                         "the API calls")
     @api.expect(requestModel, validate=True, name='authRequest')
     # @auth_name_space.response(model=responseDetailedModel, code=201, description='Created')
     @auth_name_space.response(model=responseModel, code=201, description='Created')

@@ -55,7 +55,7 @@ class TenantResource(Resource):
         try:
             accessToken = request.headers.get("X-Auth-User")
             requestBody = request.json
-            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
+            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "suspended"
             requestBody["status"] = "active"
             requestBody["project_master_id"] = requestBody.get("account_id", None)
             response = create_tenant(accessToken, requestBody)
@@ -116,12 +116,9 @@ class TenantResourceById(Resource):
             if response.status_code == 200:
                 t = response.json()
                 t = t.pop('data', {})
-                # t.pop('status', None)
-                # t.pop('message', None)
-                # t.pop('claas_metadata', None)
-                # t['account_name'] = t.pop('project_master_name', None)
-                # t['account_id'] = t.pop('project_master_id', None)
-                return custom_marshal(t, getResponseModel, ordered=True, output_key_enabled=True), 200
+                rJson = marshal(t, getResponseModel, ordered=True)
+                rJson['metadata'] = t['metadata']
+                return rJson, 200
             else:
                 return marshal(response.json(), errorModel), response.status_code
         except Exception as e:
@@ -129,7 +126,7 @@ class TenantResourceById(Resource):
 
     @api.doc(id='updateTenant', name="PutTenant Request", description="Update a tenant's status, description & "
                                                                       "metadata using its id. No operation can be "
-                                                                      "performed when a tenant is made inactive.",
+                                                                      "performed when a tenant is made suspended.",
              params={'tenant_id': 'Id of the CoreStack account under which the tenant to be updated.'},
              security=['auth_user', 'auth_token'])
     @api.expect(updateTenantReqModel, validate=True)
@@ -141,7 +138,7 @@ class TenantResourceById(Resource):
         try:
             accessToken = request.headers.get("X-Auth-User")
             requestBody = request.json
-            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "inactive"
+            # requestBody["status"] = "active" if bool(requestBody.get("status")) else "suspended"
             requestBody["project_master_id"] = requestBody.pop("account_id", None)
             response = update_tenant(accessToken, tenant_id, requestBody)
             if response.status_code == 200:
@@ -154,7 +151,7 @@ class TenantResourceById(Resource):
     @api.doc(id='deleteTenant', name="DeleteTenant Request", description='Delete a tenant by its Id. Cannot undo this '
                                                                          'action, so be cautious when performing this '
                                                                          'operation. Use updateTenant to make the '
-                                                                         'tenant as inactive if required.',
+                                                                         'tenant as suspended if required.',
              params={'tenant_id': 'Id of the tenant to be deleted.'},
              security=['auth_user', 'auth_token'])
     @tenant_name_space.response(model=tenantRemovalResModel, code=200, description='Success')

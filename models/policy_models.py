@@ -191,9 +191,11 @@ def policy_job_response():
         "execution_type": fields.String(required=True, description="Policy execution type can be on demand or scheduled"
                                         , attribute='data.execution_type'),
         "created_by": fields.String(required=True, description="Policy Job created by", attribute='data.created_by'),
-        "created_at": fields.String(required=True, description="Policy Job create time", attribute='data.created_at'),
+        "created_at": fields.String(required=True, description="Policy Job create time in UTC",
+                                    attribute='data.created_at'),
         "updated_by": fields.String(required=True, description="Policy Job updated by", attribute='data.updated_by'),
-        "updated_at": fields.String(required=True, description="Policy Job update time", attribute='data.updated_at'),
+        "updated_at": fields.String(required=True, description="Policy Job update time in UTC",
+                                    attribute='data.updated_at'),
         "tenant_name": fields.String(required=True, description="tenant name where job was created",
                                      attribute='data.project_name'),
         "policy_id": fields.String(required=True, description="Policy id of the Policy executed",
@@ -226,7 +228,7 @@ def policy_recommendation_response():
                                                           "recommendations exists", attribute='service_name'),
         "tenant_name": fields.String(required=True, description="tenant for which the recommendation exits ",
                                      attribute='project_name'),
-        "created_at": fields.String(required=True, description="time at which the recommendation was created",
+        "created_at": fields.String(required=True, description="UTC time at which the recommendation was created",
                                     attribute='created_at'),
 
     }
@@ -280,7 +282,7 @@ def policy_view_recommendation_response(actions_obj, resource_obj):
                                                           "recommendations exists", attribute='data.service_name'),
         "tenant_name": fields.String(required=True, description="tenant for which the recommendation exits ",
                                      attribute='data.project_name'),
-        "created_at": fields.String(required=True, description="time at which the recommendation was created",
+        "created_at": fields.String(required=True, description="UTC time at which the recommendation was created",
                                     attribute='data.created_at'),
         "description": fields.String(required=True, description="Description about the recommendation in details",
                                      attribute='data.description'),

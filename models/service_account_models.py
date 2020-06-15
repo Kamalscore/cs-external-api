@@ -44,7 +44,7 @@ def cloud_account_response_model_view(wildcard_model):
                                      attribute="data.description"),
         "environment": fields.String(required=True, description="Cloud account environment.for example, Development",
                                      attribute="data.environment"),
-        "scope": fields.String(required=True, description="Scope of the cloud account.for example, global",
+        "scope": fields.String(required=True, description="Scope of the cloud account.for example, tenant",
                                attribute="data.scope"),
         "auth_values": fields.Nested(wildcard_model, required=True,
                                      description="Data that describes the authentication credentials.",
@@ -59,11 +59,11 @@ def cloud_account_response_model_view(wildcard_model):
                                        attribute="data.delete_status"),
         "created_by": fields.String(required=True, description="Name of the user who created the cloud account.",
                                     attribute="data.created_by"),
-        "created_at": fields.String(required=True, description="Cloud account creation time.",
+        "created_at": fields.String(required=True, description="Cloud account creation time in UTC.",
                                     attribute="data.created_at"),
         "updated_by": fields.String(required=True, description="Name of the user who updated the cloud account.",
                                     attribute="data.updated_by"),
-        "updated_at": fields.String(required=True, description="Cloud account updation time.",
+        "updated_at": fields.String(required=True, description="Cloud account updation time in UTC.",
                                     attribute="data.updated_at")}
 
 
@@ -97,10 +97,11 @@ def cloud_account_request_model(cloud_account_auth_values_model):
     return {
         "name": fields.String(required=True, description="Unique name for the Cloud account to be created"),
         "description": fields.String(required=False, description="Description of the Cloud account to be created"),
-        "scope": fields.String(required=True, description="Scope of the cloud account.for example, global",
-                               enum=["global", "tenant", "private", "account"], default="tenant"),
+        "scope": fields.String(required=True, description="Scope of the cloud account.for example, tenant.Note:Only "
+                                                          "product admin can create an account of scope global.",
+                               enum=["global", "tenant", "private", "account"]),
         "environment": fields.String(required=True, description="Cloud account environment.for example, Development.",
-                                     enum=["All", "Production", "Staging", "QA", "Development"], default="All"),
+                                     enum=["All", "Production", "Staging", "QA", "Development"]),
         "auth_values": fields.Nested(cloud_account_auth_values_model, required=True,
                                      description="Authentication credentials of Cloud account.")
     }

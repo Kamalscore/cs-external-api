@@ -10,9 +10,11 @@ from resources.auth import auth_name_space
 from resources.cloud_account import cloud_account_name_space
 from resources.inventory import inventory_name_space
 from resources.policy import policy_name_space
+from resources.roles import role_name_space
 from resources.scripts import script_name_space
 from resources.script_jobs import script_job_name_space
 from resources.tenants import tenant_name_space
+from resources.users import user_name_space
 from resources.favicon import Fav16, Fav32
 
 
@@ -23,6 +25,8 @@ api.add_namespace(script_name_space)
 api.add_namespace(script_job_name_space)
 api.add_namespace(inventory_name_space)
 api.add_namespace(cloud_account_name_space)
+api.add_namespace(user_name_space)
+api.add_namespace(role_name_space)
 
 if __name__ == '__main__':
     # For loading the config file, take the location from command line
