@@ -248,22 +248,18 @@ class PolicyActionsByName(Resource):
             t = request.json
             cloud_accounts = t.pop("cloud_accounts")
             cloud_account_list = list()
-            cloud_account = dict()
             for cloud in cloud_accounts:
-                cloud_account["service_type"] = "Cloud"
+                cloud["service_type"] = "Cloud"
+                cloud["id"] = cloud.pop("cloud_account_id")
                 if cloud.get("cloud"):
-                    cloud_account["service_name"] = cloud.get("cloud")
-                if cloud.get("region"):
-                    cloud_account["region"] = cloud.get("region")
-                cloud_account["id"] = cloud["cloud_account_id"]
-                cloud_account_list.append(cloud_account)
+                    cloud["service_name"] = cloud.pop("cloud")
+                cloud_account_list.append(cloud)
             t["service_accounts"] = cloud_account_list
             headers = request.headers
             args = request.args
             format_params = {'project_id': tenant_id, 'policy_id': policy_id}
             response = invoke_api(policy_api_definition, 'execute', format_params, args=args, headers=headers,
                                   req_body=t)
-            value = json.loads(response.content.decode('utf-8'))
             if response.status_code == 200:
                 return marshal(response.json(), executePolicyResponseModel)
             else:

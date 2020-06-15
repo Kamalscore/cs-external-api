@@ -301,7 +301,8 @@ def policy_execute_model(arguments, service_account):
                               description="arguments to execute policy for example values can be in the below format "
                                           "{'listOfAllowedSKUs':['Basic_A0']} or {'requiredRetentionDays':'365',"
                                           "'effect':'AuditIfNotExists'} etc.The values are dynamic in nature can "
-                                          "change from policy to policy"),
+                                          "change from policy to policy.The arguments required can be changed in the "
+                                          "policy content in the view policy api"),
         "cloud_accounts": fields.List(fields.Nested(service_account), required=True,
                                       description="cloud account details to execute the policy")
     }
@@ -314,8 +315,11 @@ def service_account_details():
         "cloud_account_id": fields.String(required=True, description="Identifier of the cloud account on boarded in "
                                                                      "the on boarding section"),
         "region": fields.String(required=False, description="The region of the service account where it needs to be"
-                                                            "executed, if this is not provided the script will execute"
-                                                            "for all the region")
+                                                            "executed, if this is not provided the policy will execute"
+                                                            "for all the region"),
+        "resourcegroup": fields.String(required=False,
+                                       description="Resource group for which you need to execute the policy for, this"
+                                                   "is not a mandatory parameter to be passed")
     }
 
 
