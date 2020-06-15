@@ -54,11 +54,11 @@ class CloudAccountResource(Resource):
              description="Create a cloud account for a specific service for a given tenant. \
                          Service implies any Cloud platform that is integrated with CoreStack.The specified auth values\
                          should be passed based on the cloud service.Below\
-                         mentioned auth_values in the request model is to create AWS Cloud account."
-                         "Note: Refer AzureCloudAccountAuthValues to replace auth_values for Azure cloud account.",
+                         mentioned auth_values in the request model is to create AWS Cloud account.",
              security=['auth_user', 'auth_token'],
-             params={"cloud": {"description": "Available cloud services", "in": "query", "type": "str",
-                               "enum": ["AWS", "Azure"]}
+             params={"cloud": {"description": "Available cloud services.It is a mandatory parameter.", "in": "query",
+                               "type": "str",
+                               "enum": ["AWS"]}
                      })
     @api.expect(CloudAccountCreateRequest, validate=False)
     @cloud_account_name_space.response(model=CloudAccountCreateResponse, code=201, description='Success')
@@ -102,7 +102,7 @@ class CloudAccountResource(Resource):
              description='List all cloud accounts for a given tenant.',
              security=['auth_user', 'auth_token'],
              params={"cloud": {"description": "Available cloud services", "in": "query", "type": "str",
-                               "enum": ["AWS", "Azure"], "default": ""}
+                               "enum": ["AWS"], "default": ""}
                      })
     @cloud_account_name_space.response(model=CloudAccountListResponse, code=200, description='Success')
     @cloud_account_name_space.response(model=errorModel, code=400, description='Bad Request')
@@ -158,11 +158,11 @@ class CloudAccountResourceById(Resource):
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
              description="Update cloud account with specified value for the service for a given tenant.The specified auth values\
                          should be passed based on the cloud service.Below\
-                         mentioned auth_values in the request model is for AWS Cloud account."
-                         "Note: Refer AzureCloudAccountAuthValues to replace auth_values for Azure.",
+                         mentioned auth_values in the request model is for AWS Cloud account.",
              security=['auth_user', 'auth_token'],
-             params={"cloud": {"description": "Available cloud services", "in": "query", "type": "str",
-                               "enum": ["AWS", "Azure"]}
+             params={"cloud": {"description": "Available cloud services.It is a mandatory parameter.", "in": "query",
+                               "type": "str",
+                               "enum": ["AWS"]}
                      })
     @api.expect(AWSCloudAccountUpdateRequest, validate=True)
     @cloud_account_name_space.response(model=CloudAccountUpdateResponse, code=200, description='Success')
@@ -207,11 +207,11 @@ class CloudAccountResourceById(Resource):
              description="Delete a specific cloud account and all its dependencies for a given tenant.Based on the"
                          " dependencies, cloud account delete might take sometime.",
              security=['auth_user', 'auth_token'],
-             params={"action": {"description": "Action to delete a Cloud account: Below "
+             params={"action": {"description": "Action to delete a Cloud account.Before deleting a cloud account, "
+                                               "dependencies has to be listed using action 'list'. "
+                                               "It is a mandatory parameter.: Below "
                                                "mentioned Response model is obtained when the "
-                                               "action is 'list' to get the dependencies of a Cloud account. "
-                                               "Note: Please find the model CloudAccountDeleteResponse, when the "
-                                               "action is 'delete'.", "in": "query", "type": "str",
+                                               "action is 'list'.", "in": "query", "type": "str",
                                 "enum": ["list", "delete"]}
                      })
     @cloud_account_name_space.response(model=CloudAccountDependencyResponse, code=200, description='Success')

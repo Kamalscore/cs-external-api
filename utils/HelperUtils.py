@@ -93,7 +93,10 @@ def getDecodedValue(encryptedValue):
 
 def invoke_api(definition, action, format_params=None, req_body=None, args=None, headers=None,
                base_url=CS_ENDPOINT_URL_DEFAULT_VALUE):
-    url = definition.get(action, {}).get('path', '').format(**format_params)
+    if format_params:
+        url = definition.get(action, {}).get('path', '').format(**format_params)
+    else:
+        url = definition.get(action, {}).get('path', '')
     if not args:
         args = {}
     if definition.get(action, {}).get('query_params'):
@@ -103,3 +106,10 @@ def invoke_api(definition, action, format_params=None, req_body=None, args=None,
         url = url + '?' + urlencode(args)
     return requests.request(definition.get(action, {}).get('method'), url, data=json.dumps(req_body),
                             headers=headers)
+
+
+def request_marshal(req_body, request_mapping):
+    for key, value in request_mapping.items():
+        if value not in req_body:
+            continue
+        req_body[key] = req_body.pop(value, "")
