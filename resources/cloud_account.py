@@ -11,8 +11,7 @@ from definitions.service_account_definitions import ServiceAccountUrlDefinitions
 from models.service_account_models import aws_cloud_account_auth_values_model, cloud_account_request_model, \
     cloud_account_create_response_model, cloud_account_dependency_response_model, cloud_account_delete_response_model, \
     wild_card_model, azure_cloud_account_auth_values_model, cloud_account_response_model_list, \
-    cloud_account_data_model_list, cloud_account_response_model_view, cloud_account_rediscover_response, \
-    cloud_account_dependency_data_model, dependency_metadata_model
+    cloud_account_data_model_list, cloud_account_response_model_view, cloud_account_rediscover_response
 from models.swagger_models import error
 from utils.HelperUtils import getClassName
 from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
@@ -39,12 +38,8 @@ AzureCloudAccountAuthValues = api.model('AzureCloudAccountAuthValues',
 CloudAccountCreateResponse = api.model('CloudAccountCreateResponse', cloud_account_create_response_model())
 CloudAccountUpdateResponse = api.model('CloudAccountUpdateResponse', cloud_account_create_response_model())
 CloudAccountDeleteResponse = api.model('CloudAccountDeleteResponse', cloud_account_delete_response_model())
-CloudAccountDependencyMetadata = api.model('CloudAccountDependencyMetadata', dependency_metadata_model())
-CloudAccountDependency = api.model('CloudAccountDependency',
-                                   cloud_account_dependency_data_model(CloudAccountDependencyMetadata))
-CloudAccountDependencyResponse = api.inherit('CloudAccountDependencyResponse',
-                                             CloudAccountDeleteResponse,
-                                             cloud_account_dependency_response_model(CloudAccountDependency))
+CloudAccountDependencyResponse = api.model('CloudAccountDependencyResponse',
+                                           cloud_account_dependency_response_model(WildCardModel))
 CloudAccountRediscoverResponse = api.model('CloudAccountRediscoverResponse',
                                            cloud_account_rediscover_response())
 service_account_api_defn = ServiceAccountUrlDefinitions.URLInfo
