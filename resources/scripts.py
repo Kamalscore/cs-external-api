@@ -57,9 +57,11 @@ class Scripts(Resource):
              security=['auth_user', 'auth_token'],
              params={
                  'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
-                 'types': {'description': 'Script types to filter', 'in': 'query', 'type': 'string',
+                 'types': {'description': 'Script types to filter. Allowed Values: chef, ansible, puppet, shell',
+                           'in': 'query', 'type': 'string',
                            'enum': ['chef', 'ansible', 'puppet', 'shell']},
-                 'category': {'description': 'Script types to filter', 'in': 'query', 'type': 'string',
+                 'category': {'description': 'Script types to filter. Allowed Values: Application, Languages, Database,'
+                                             ' Security, System, Web Server, Others', 'in': 'query', 'type': 'string',
                               'enum': ["Application", "Languages", "Database", "Security", "System", "Web Server",
                                        "Others"]},
                  'limit': {'description': 'Number of records to display', 'type': 'integer',
