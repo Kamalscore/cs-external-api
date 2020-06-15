@@ -281,8 +281,7 @@ class ExecuteScript(Resource):
                                                         'multiple scripts against multiple target machines.',
              security=['auth_user', 'auth_token'],
              params={
-                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'},
-                 'script_id': {'description': 'ID of the script. This can be fetched from listScripts API'}
+                 'tenant_id': {'description': 'ID of the tenant. This can be fetched from listTenants API'}
              }
              )
     @api.expect(executeScriptReqModel, validate=True)

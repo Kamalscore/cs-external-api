@@ -192,10 +192,10 @@ def script_execute_job_input_model():
     return {
         "host": fields.String(required=True, description="Target machine's IP/DNS"),
         "username": fields.String(required=True, description="Username of the target machine"),
-        "password": fields.String(description="Password of the target machine's IP/DNS"),
         "keypair_flag": fields.String(required=True,
                                       description="Flag to indicate whether to connect using keypair or not"),
-        "key_file": fields.String(required=True, description="Private key content if keypair_flag is true"),
+        "password": fields.String(description="Password of the target machine's IP/DNS"),
+        "key_file": fields.String(description="Private key content if keypair_flag is true"),
         "port": fields.String(required=True, description="SSH/WinRM port"),
         "platform": fields.String(required=True, description="OS platform of the target machine (linux/windows)",
                                   enum=["linux", "windows"]),
