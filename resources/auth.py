@@ -80,8 +80,8 @@ class AuthResourceRefresh(Resource):
     @api.doc(id='RefreshToken', name="Refresh Token Request",
              description="Token generated in authToken API will be valid for an hour. Post that access_token will "
                          "automatically expire. When the access_token is expired, there are two options. "
-                         "<ol> <li> use the authToken API to generate a new token </li>"
-                         "<li> use refreshToken API to extend the validity of the current token. </li> </ol>"
+                         "1) use the authToken API to generate a new token "
+                         "2) use refreshToken API to extend the validity of the current token."
                          "The refreshed token will also expire after an hour, refer to expires_at in the response for "
                          "the validity of the token. When the refreshed token also expires, call again the "
                          "refreshToken API to extend it further. Like wise a token can extended 3 times, "
