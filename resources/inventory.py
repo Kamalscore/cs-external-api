@@ -60,8 +60,8 @@ class InventoryCategoryDetails(Resource):
                          'list categories & Get inventory resource count based on the cloud and cloud account '
                          'will list all resources with resource_category, resource_type, resource and will list '
                          'only the count on number of resources available in particular category',
-             params={'service_name': {'description': '', 'in': 'query', 'type': 'string', 'enum': ['AWS', 'Azure'],
-                                      'default': 'AWS'},
+             params={'service_name': {'description': 'Name of the cloud', 'in': 'query', 'type': 'string',
+                                      'enum': ['AWS', 'Azure'], 'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
     @api.expect(inventoryCategoryCountRequestModel, validate=True)
@@ -107,7 +107,7 @@ class InventoryResource(Resource):
                          'can be applied on the resource details call and this api is only to list filters'
                          'for ex: AWS will have regions and tags as filters available and '
                          'Azure will have resource groups and tags as filters',
-             params={'service_name': {'description': 'Name of the service cloud', 'in': 'query',
+             params={'service_name': {'description': 'Name of the cloud', 'in': 'query',
                                       'type': 'string', 'enum': ['AWS', 'Azure'], 'default': 'AWS'},
                      "tenant_id": "Specify the tenant Id for the inventory"},
              security=['auth_user', 'auth_token'])
