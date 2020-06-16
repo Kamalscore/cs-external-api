@@ -8,6 +8,9 @@ import logging
 from flask import request
 from flask_restplus import Resource, marshal
 
+from config.ConfigManager import getProperty, WEB_CONFIG_SECTION, CS_ENDPOINT_URL_DEFAULT_VALUE, \
+    CS_ENDPOINT_URL_PROPERTY_NAME
+
 from app import api
 from definitions.script_definitions import ScriptURLDefinitions
 from models.script_models import script_response_list, \
@@ -77,7 +80,10 @@ class Scripts(Resource):
             headers = request.headers
             args = request.args
             format_params = {'tenant_id': tenant_id}
-            response = invoke_api(script_api_definition, 'list', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'list', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), scriptResponseModelList, ordered=True), 200
             else:
@@ -114,7 +120,10 @@ class Scripts(Resource):
             }
             args = request.args
             headers = request.headers
-            response = invoke_api(script_api_definition, 'create', format_params, req_body, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'create', format_params, req_body, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), createUpdateResponseModel, ordered=True), 201
             else:
@@ -147,7 +156,10 @@ class ScriptByID(Resource):
             headers = request.headers
             args = request.args
             format_params = {'tenant_id': tenant_id, 'script_id': script_id}
-            response = invoke_api(script_api_definition, 'view', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'view', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 marshalled_resp = marshal(response.json(), scriptDataModelView, ordered=True, skip_none=True)
                 SCRIPT_TECHNICAL_NAME = dict(chef='cookbook', puppet='module',
@@ -190,7 +202,10 @@ class ScriptByID(Resource):
             }
             args = request.args
             headers = request.headers
-            response = invoke_api(script_api_definition, 'update', format_params, req_body, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'update', format_params, req_body, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), createUpdateResponseModel, ordered=True), 200
             else:
@@ -219,7 +234,10 @@ class ScriptByID(Resource):
             }
             args = request.args
             headers = request.headers
-            response = invoke_api(script_api_definition, 'delete', format_params, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'delete', format_params, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), scriptRemovalResModel, ordered=True), 200
             else:
@@ -259,7 +277,10 @@ class ScanScript(Resource):
             }
             args = request.args
             headers = request.headers
-            response = invoke_api(script_api_definition, 'scan', format_params, req_body, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'scan', format_params, req_body, args=args, headers=headers,
+                                  base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), scanResponseModel, ordered=True), 200
             else:
@@ -298,7 +319,10 @@ class ExecuteScript(Resource):
             }
             args = request.args
             headers = request.headers
-            response = invoke_api(script_api_definition, 'execute', format_params, req_body, args=args, headers=headers)
+            base_url = getProperty(WEB_CONFIG_SECTION, CS_ENDPOINT_URL_PROPERTY_NAME,
+                                   CS_ENDPOINT_URL_DEFAULT_VALUE)
+            response = invoke_api(script_api_definition, 'execute', format_params, req_body, args=args,
+                                  headers=headers, base_url=base_url)
             if response.status_code == 200:
                 return marshal(response.json(), executeResponseModel, ordered=True), 200
             else:
