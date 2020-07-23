@@ -68,8 +68,41 @@ def cloud_account_response_model_view(wildcard_model):
 
 def aws_cloud_account_auth_values_model():
     return {
+        "protocol": fields.String(required=True, description="Authentication protocol for the AWS account.",
+                                  enum=["access_key"]),
         "access_key": fields.String(required=True, description="Access Key of AWS account."),
         "secret_key": fields.String(required=True, description="Secret Key of AWS account."),
+        "account_type": fields.String(required=True, description="Type of the account to be created. Master Account/"
+                                                                 "Payer Account: The master account has the "
+                                                                 "responsibilities of a payer account and is "
+                                                                 "responsible for paying all charges that are accrued "
+                                                                 "by the member accounts. You can't change an "
+                                                                 "organization's master account.It is advisable not "
+                                                                 "to have any resources created in Master account and "
+                                                                 "its only used for Billing and Identity Management."
+                                                                 "Member Account/Linked Account: A standard AWS "
+                                                                 "accounts that belong to an organization are called"
+                                                                 " member accounts.",
+                                      enum=["master_account", "linked_account"]),
+        "bucket_name": fields.String(required=False,
+                                     description="Billing Bucket Name to process billing data.It is mandatory for the "
+                                                 "account_type 'master_account'"),
+        "master_account": fields.String(required=False,
+                                        description="Cloud account ID of the existing Master Account in the system."
+                                                    "It is required if the account_type is chosen as "
+                                                    "'linked_account'")
+    }
+
+
+def aws_cloud_account_assume_role_auth_values_model():
+    return {
+        "protocol": fields.String(required=True, description="Authentication protocol for the AWS account.",
+                                  enum=["assume_role"]),
+        "assume_role_mfa_enabled": fields.String(required=True,
+                                                 description="Multi-Factor Authentication for assume role.",
+                                                 enum=["true", "false"]),
+        "assume_role_arn": fields.String(required=True, description="ARN of the assume role."),
+        "assume_role_external_id": fields.String(required=True, description="Unique Identifier of the assume role."),
         "account_type": fields.String(required=True, description="Type of the account to be created. Master Account/"
                                                                  "Payer Account: The master account has the "
                                                                  "responsibilities of a payer account and is "
