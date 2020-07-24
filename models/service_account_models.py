@@ -92,13 +92,18 @@ def aws_cloud_account_auth_values_model():
     }
 
 
-def aws_cloud_account_assume_role_auth_values_model():
+def aws_assume_role_model():
     return {
-        "assume_role_mfa_enabled": fields.String(required=True,
-                                                 description="Multi-Factor Authentication for assume role.",
-                                                 enum=["true", "false"]),
-        "assume_role_arn": fields.String(required=True, description="ARN of the assume role."),
-        "assume_role_external_id": fields.String(required=True, description="Unique Identifier of the assume role."),
+        "mfa_enabled": fields.String(required=True,
+                                     description="Multi-Factor Authentication for assume role.",
+                                     enum=["true", "false"]),
+        "role_arn": fields.String(required=True, description="ARN of the assume role."),
+        "external_id": fields.String(required=True, description="Unique Identifier of the assume role.")
+    }
+
+
+def aws_cloud_account_assume_role_auth_values_model(assume_role_values_model):
+    return {
         "account_type": fields.String(required=True, description="Type of the account to be created. Master Account/"
                                                                  "Payer Account: The master account has the "
                                                                  "responsibilities of a payer account and is "
@@ -112,23 +117,25 @@ def aws_cloud_account_assume_role_auth_values_model():
                                                                  " member accounts.",
                                       enum=["master_account", "linked_account"]),
         "bucket_name": fields.String(required=False,
-                                     description="Billing Bucket Name to process billing data.It is mandatory for the "
-                                                 "account_type 'master_account'"),
+                                     description="Billing Bucket Name to process billing data. It is mandatory for the "
+                                                 "account_type 'master_account'."),
         "master_account": fields.String(required=False,
                                         description="Cloud account ID of the existing Master Account in the system."
                                                     "It is required if the account_type is chosen as "
-                                                    "'linked_account'")
+                                                    "'linked_account'."),
+        "assume_role": fields.Nested(assume_role_values_model, required=True,
+                                     description="Assume role authentication protocol."),
     }
 
 
 def cloud_account_request_model(cloud_account_auth_values_model):
     return {
-        "name": fields.String(required=True, description="Unique name for the Cloud account to be created"),
-        "description": fields.String(required=False, description="Description of the Cloud account to be created"),
-        "scope": fields.String(required=True, description="Scope of the cloud account.for example, tenant.Note:Only "
+        "name": fields.String(required=True, description="Unique name for the Cloud account to be created."),
+        "description": fields.String(required=False, description="Description of the Cloud account to be created."),
+        "scope": fields.String(required=True, description="Scope of the cloud account. for example, tenant. Note:Only "
                                                           "product admin can create an account of scope global.",
-                               enum=["global", "tenant", "private", "account"]),
-        "environment": fields.String(required=True, description="Cloud account environment.for example, Development.",
+                               enum=["tenant", "private", "account"]),
+        "environment": fields.String(required=True, description="Cloud account environment. for example, Development.",
                                      enum=["All", "Production", "Staging", "QA", "Development"]),
         "auth_values": fields.Nested(cloud_account_auth_values_model, required=True,
                                      description="Authentication credentials of Cloud account.")
