@@ -62,10 +62,9 @@ class CloudAccountResource(Resource):
              description="CoreStack allows to onboard AWS cloud account using two different authentication protocols - "
                          "Access Key & Assume Role. Access key being the default and widely used authentication "
                          "protocol, Assume Role option is more secure as suggested by AWS. This method allows "
-                         "onboarding of Cloud Account using Access Key. Details on the Access Key can be found in the"
+                         "onboarding of Cloud Account using Access Key. Details on the Access Key can be found in the "
                          "link https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html. Use method "
-                         "createCloudAccountAssumeRole for onboarding cloud account in CoreStack using Assume Role."
-        ,
+                         "'createCloudAccountAssumeRole' for onboarding cloud account in CoreStack using Assume Role.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api."},
              security=['auth_user', 'auth_token']
@@ -151,8 +150,8 @@ class CloudAccountResourceAssumeRole(Resource):
                          "Access Key & Assume Role. Access key being the default and widely used authentication "
                          "protocol, Assume Role option is more secure as suggested by AWS. This method allows "
                          "onboarding of Cloud Account using Assume Role. Details on the Assume Role can be found in the"
-                         "link https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html. Use "
-                         "method createCloudAccount for onboarding cloud account in CoreStack using Access Key.",
+                         " link https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html. Use "
+                         "method 'createCloudAccount' for onboarding cloud account in CoreStack using Access Key.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api."},
              security=['auth_user', 'auth_token']
