@@ -68,8 +68,6 @@ def cloud_account_response_model_view(wildcard_model):
 
 def aws_cloud_account_auth_values_model():
     return {
-        "protocol": fields.String(required=True, description="Authentication protocol for the AWS account.",
-                                  enum=["access_key"]),
         "access_key": fields.String(required=True, description="Access Key of AWS account."),
         "secret_key": fields.String(required=True, description="Secret Key of AWS account."),
         "account_type": fields.String(required=True, description="Type of the account to be created. Master Account/"
@@ -96,8 +94,6 @@ def aws_cloud_account_auth_values_model():
 
 def aws_cloud_account_assume_role_auth_values_model():
     return {
-        "protocol": fields.String(required=True, description="Authentication protocol for the AWS account.",
-                                  enum=["assume_role"]),
         "assume_role_mfa_enabled": fields.String(required=True,
                                                  description="Multi-Factor Authentication for assume role.",
                                                  enum=["true", "false"]),

@@ -60,7 +60,7 @@ class CloudAccountResource(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResource))
 
     @api.doc(id="CreateCloudAccount", name="CreateCloudAccount",
-             description="Creates an AWS cloud account for a given tenant.",
+             description="Creates an AWS cloud account with access key authentication for a given tenant.",
              security=['auth_user', 'auth_token']
              )
     @api.expect(CloudAccountCreateRequest, validate=False)
@@ -82,6 +82,7 @@ class CloudAccountResource(Resource):
             auth_values = req_body.get("auth_values")
             # Service AWS
             if service == "AWS":
+                auth_values.update(protocol="access_key")
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
@@ -137,7 +138,7 @@ class CloudAccountResourceAssumeRole(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResourceAssumeRole))
 
     @api.doc(id="CreateCloudAccountAssumeRole", name="CreateCloudAccountAssumeRole",
-             description="Creates an AWS cloud account with assume role for a given tenant.",
+             description="Creates an AWS cloud account with assume role authentication for a given tenant.",
              security=['auth_user', 'auth_token']
              )
     @api.expect(AWSCloudAccountAssumeRoleCreateRequest, validate=False)
@@ -159,6 +160,7 @@ class CloudAccountResourceAssumeRole(Resource):
             auth_values = req_body.get("auth_values")
             # Service AWS
             if service == "AWS":
+                auth_values.update(protocol="assume_role")
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
@@ -187,7 +189,8 @@ class CloudAccountResourceAssumeRoleById(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResourceAssumeRoleById))
 
     @api.doc(id="UpdateCloudAccountAssumeRole", name="UpdateCloudAccountAssumeRole",
-             description="Update the existing AWS cloud account created with assume role for a given tenant.",
+             description="Update the existing AWS cloud account created with assume role authentication for a given"
+                         " tenant.",
              security=['auth_user', 'auth_token']
              )
     @api.expect(AWSCloudAccountAssumeRoleUpdateRequest, validate=True)
@@ -210,6 +213,7 @@ class CloudAccountResourceAssumeRoleById(Resource):
             auth_values = req_body.get("auth_values")
             # Service AWS
             if service == "AWS":
+                auth_values.update(protocol="assume_role")
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
@@ -262,7 +266,7 @@ class CloudAccountResourceById(Resource):
             cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
-             description="Update the existing AWS cloud account with specified value for a given tenant.",
+             description="Update the existing AWS cloud account with access key authentication for a given tenant.",
              security=['auth_user', 'auth_token']
              )
     @api.expect(AWSCloudAccountUpdateRequest, validate=True)
@@ -285,6 +289,7 @@ class CloudAccountResourceById(Resource):
             auth_values = req_body.get("auth_values")
             # Service AWS
             if service == "AWS":
+                auth_values.update(protocol="access_key")
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
