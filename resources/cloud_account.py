@@ -299,7 +299,7 @@ class CloudAccountResourceById(Resource):
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
              description="Update the existing AWS cloud account with access_key authentication for a given tenant. "
                          "Since authentication protocol can also be updated with cloud_account edit, you should make "
-                         "use of 'updateCloudAccount/AssumeRole' API method to update the cloud_account with "
+                         "use of 'updateCloudAccountAssumeRole' API method to update the cloud_account with "
                          "assume_role authentication with appropriate request body.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api.",
