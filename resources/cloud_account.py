@@ -59,11 +59,13 @@ class CloudAccountResource(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResource))
 
     @api.doc(id="CreateCloudAccount", name="CreateCloudAccount",
-             description="Creates an AWS cloud account with access key authentication for a given tenant. In case of "
-                         "cloud account creation with assume role authentication, you should make use of "
-                         "'createCloudAccountAssumeRole' API method with appropriate request body. Please refer the "
-                         "link to know about AWS access_key authentication - "
-                         "https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html",
+             description="CoreStack allows to onboard AWS cloud account using two different authentication protocols - "
+                         "Access Key & Assume Role. Access key being the default and widely used authentication "
+                         "protocol, Assume Role option is more secure as suggested by AWS. This method allows "
+                         "onboarding of Cloud Account using Access Key. Details on the Access Key can be found in the"
+                         "link https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html. Use method "
+                         "createCloudAccountAssumeRole for onboarding cloud account in CoreStack using Assume Role."
+        ,
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api."},
              security=['auth_user', 'auth_token']
@@ -145,11 +147,12 @@ class CloudAccountResourceAssumeRole(Resource):
         self.logger = logging.getLogger(getClassName(CloudAccountResourceAssumeRole))
 
     @api.doc(id="CreateCloudAccountAssumeRole", name="CreateCloudAccountAssumeRole",
-             description="Creates an AWS cloud account with assume role authentication for a given tenant. In case of "
-                         "cloud account creation with access key authentication, you should make use of "
-                         "'createCloudAccount' API method with appropriate request body. Please refer the link to know "
-                         "about AWS assume_role authentication - "
-                         "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html",
+             description="CoreStack allows to onboard AWS cloud account using two different authentication protocols - "
+                         "Access Key & Assume Role. Access key being the default and widely used authentication "
+                         "protocol, Assume Role option is more secure as suggested by AWS. This method allows "
+                         "onboarding of Cloud Account using Assume Role. Details on the Assume Role can be found in the"
+                         "link https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html. Use "
+                         "method createCloudAccount for onboarding cloud account in CoreStack using Access Key.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api."},
              security=['auth_user', 'auth_token']
@@ -207,9 +210,9 @@ class CloudAccountResourceAssumeRoleById(Resource):
 
     @api.doc(id="UpdateCloudAccountAssumeRole", name="UpdateCloudAccountAssumeRole",
              description="Updates the existing AWS cloud account created with assume_role authentication for a given "
-                         "tenant. Since authentication protocol can also be updated with cloud_account edit, you should"
-                         " make use of 'updateCloudAccount' API method to update the cloud_account with access_key "
-                         "authentication with appropriate request body.",
+                         "tenant. It is possible to change the authentication protocol from Assume Role to Access Key "
+                         "and vice versa. Use this method to update cloud account with Assume Role authentication. "
+                         "For details to use Access Key refer to method 'updateCloudAccount'.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api.",
                      "cloud_account_id": "Specify the cloud account id to update, cloud account id is unique can be "
@@ -297,10 +300,10 @@ class CloudAccountResourceById(Resource):
             cloud_account_name_space.abort(500, e.__doc__, status="Internal Server Error", statusCode="500")
 
     @api.doc(id="UpdateCloudAccount", name="UpdateCloudAccount",
-             description="Update the existing AWS cloud account with access_key authentication for a given tenant. "
-                         "Since authentication protocol can also be updated with cloud_account edit, you should make "
-                         "use of 'updateCloudAccountAssumeRole' API method to update the cloud_account with "
-                         "assume_role authentication with appropriate request body.",
+             description="Updates the existing AWS cloud account created with access_key authentication for a given "
+                         "tenant. It is possible to change the authentication protocol from Access Key to Assume Role "
+                         "and vice versa. Use this method to update cloud account with Access Key authentication. "
+                         "For details to use Assume Role refer to method 'updateCloudAccountAssumeRole'.",
              params={"tenant_id": "Specify the tenant id to create cloud account which is a unique id "
                                   "can be retrieved using the list tenant api.",
                      "cloud_account_id": "Specify the cloud account id to update, cloud account id is unique can be "
