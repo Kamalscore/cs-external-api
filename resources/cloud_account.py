@@ -92,9 +92,6 @@ class CloudAccountResource(Resource):
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
-                if auth_values.get("account_type") == "linked_account" and not auth_values.get("master_account"):
-                    return marshal({"message": "master_account is mandatory for account_type 'linked_account'"},
-                                   errorModel), 400
             # Service Azure
             if service == "Azure":
                 req_body.update(cloud_type="Azure_Global")
@@ -183,9 +180,6 @@ class CloudAccountResourceAssumeRole(Resource):
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
                                    errorModel), 400
-                if auth_values.get("account_type") == "linked_account" and not auth_values.get("master_account"):
-                    return marshal({"message": "master_account is mandatory for account_type 'linked_account'"},
-                                   errorModel), 400
             # Service Azure
             if service == "Azure":
                 req_body.update(cloud_type="Azure_Global")
@@ -245,9 +239,6 @@ class CloudAccountResourceAssumeRoleById(Resource):
                                    assume_role_external_id=assume_role_values.get("external_id"))
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
-                                   errorModel), 400
-                if auth_values.get("account_type") == "linked_account" and not auth_values.get("master_account"):
-                    return marshal({"message": "master_account is mandatory for account_type 'linked_account'"},
                                    errorModel), 400
             # Service Azure
             if service == "Azure":
@@ -332,9 +323,6 @@ class CloudAccountResourceById(Resource):
                 auth_values.update(protocol="access_key")
                 if auth_values.get("account_type") == "master_account" and not auth_values.get("bucket_name"):
                     return marshal({"message": "bucket_name is mandatory for account_type 'master_account'"},
-                                   errorModel), 400
-                if auth_values.get("account_type") == "linked_account" and not auth_values.get("master_account"):
-                    return marshal({"message": "master_account is mandatory for account_type 'linked_account'"},
                                    errorModel), 400
             # Service Azure
             if service == "Azure":
