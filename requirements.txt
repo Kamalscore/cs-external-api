@@ -2,6 +2,6 @@
 flask_cors==3.0.7
 flask-restplus==0.13.0
 flask==1.0.3
-werkzeug==0.15.4
+werkzeug==0.15.5
 requests
 flask_marshmallow==0.12.0
